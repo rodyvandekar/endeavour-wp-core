@@ -1,0 +1,235 @@
+/**
+ * Endeavour Elementor normalize
+ *
+ * Home for small, cross-widget corrections to Elementor's own defaults — the
+ * kind of one-liner that fixes a rendering artifact and answers no control in
+ * the editor. Anything that belongs to a single component (the button variants)
+ * or to a behaviour (the shared hover surface) has its own file instead.
+ *
+ * Before adding a rule here, check that Elementor really has no control for it.
+ * A child-theme selector outranks the kit, so a duplicate silently freezes the
+ * editor: the value changes in Site Settings and nothing happens on screen.
+ *
+ * Source of truth for `assets/css/elementor-normalize.css`.
+ * Compile: npx --yes sass assets/scss/elementor-normalize.scss assets/css/elementor-normalize.css
+ */
+
+@use "tokens" as *;
+
+// ---------------------------------------------------------------------------
+// Icons sit on their own baseline
+// ---------------------------------------------------------------------------
+
+/**
+ * An icon carries the body leading twice over, and both have to be undone.
+ *
+ * The glyph itself is text: an <i> inherits the surrounding line-height, so at
+ * a body leading of 32px a 20px glyph lands in a 32px line box — 12px it does
+ * not fill — and every flex row it sits in inherits that height.
+ *
+ * The box around it is the second half. Elementor renders the icon as an
+ * inline-level element (`.elementor-icon` is inline-block), so the block that
+ * holds it opens a line box of its own at the same 32px. Collapsing only the
+ * glyph leaves that outer box behind: the Icon widget measured a 20x20 anchor
+ * inside a 20x32 wrapper inside a 20x32 widget.
+ *
+ * Elementor already ships `.elementor-icon { line-height: 1 }`, but that is a
+ * single class (0,1,0) and the kit's global Link style answers with
+ * `.elementor-kit-N a` (0,2,0) — so the moment an icon is a link, the body
+ * leading wins again. The wrappers get no rule at all and simply inherit.
+ *
+ * Elementor exposes no line-height control for any of these, so nothing in the
+ * editor is frozen by this.
+ */
+
+/**
+ * Widget roots whose content is a single inline-level element.
+ *
+ * Only widgets that carry no running text of their own. Icon List is
+ * deliberately absent: its labels would inherit the 1 and lose their leading.
+ * Button is safe because the kit sets the label's line-height on
+ * `.elementor-button`, a level below this.
+ */
+.elementor-element.elementor-widget-icon,
+.elementor-element.elementor-widget-social-icons,
+.elementor-element.elementor-widget-button {
+	line-height: 1;
+}
+
+/**
+ * Icon slots, including those inside widgets that do carry text.
+ */
+.elementor-element.elementor-widget {
+	// (0,3,0) — above the kit's `a` (0,2,0).
+	.elementor-icon-wrapper,
+	.elementor-icon,
+	.elementor-icon-list-icon,
+	.elementor-button-icon,
+	.elementor-social-icon,
+	.elementor-accordion-icon,
+	.elementor-toggle-icon,
+	.elementor-menu-toggle,
+	.elementor-star-rating {
+		line-height: 1;
+	}
+
+	// The kit repeats itself at `.elementor-kit-N a:hover` (0,3,0), which would
+	// tie the rule above and restore the body leading on hover. Naming the state
+	// lifts this to (0,4,0) and settles it in every load order.
+	.elementor-icon:hover,
+	.elementor-social-icon:hover {
+		line-height: 1;
+	}
+
+	/**
+	 * Collapsing the line box gets the wrapper from 32px down to 22.5px, not to
+	 * 20px. The remainder is the baseline: an inline-block sits on it, so the
+	 * strut's descender still hangs below the icon. Aligning to the top takes
+	 * the icon off the baseline and the box ends up exactly icon-high.
+	 *
+	 * The element stays inline-block, so the widget's own alignment control —
+	 * which works through `text-align` on the wrapper — keeps working.
+	 */
+	.elementor-icon,
+	.elementor-social-icon {
+		vertical-align: top;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// A linked list row keeps the typography of its widget
+// ---------------------------------------------------------------------------
+
+/**
+ * Icon List and Post Info hang their typography control on the row
+ * (`.elementor-icon-list-item`), but the label of a linked row sits inside an
+ * `<a>`. The kit's Theme Style link rule writes a complete font on every
+ * anchor, so that one item would render in the Body text link style — 16/32
+ * next to the 14/20 of its unlinked neighbours.
+ *
+ * Inheriting gives the row's typography back to the widget's control. The
+ * underline still comes from Site Settings > Theme Style > Links, so the design
+ * system keeps owning it.
+ */
+.elementor-widget-icon-list,
+.elementor-widget-post-info {
+	// (0,2,1) — above the kit's `.elementor-kit-N a` (0,1,1).
+	.elementor-icon-list-item > a {
+		font: inherit;
+		letter-spacing: inherit;
+	}
+
+	// Space Between writes horizontal margins only for the inline layout, so a
+	// row that wraps on a narrow screen has its lines touching. 8px is the
+	// design system's smallest step and the gap the row carried when it was
+	// still a flex container.
+	.elementor-icon-list-items.elementor-inline-items {
+		row-gap: 8px;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// A link inside a heading keeps the heading's type
+// ---------------------------------------------------------------------------
+
+/**
+ * Theme Style writes a complete font, colour and underline on every anchor.
+ * A heading's type lands on the heading element, so the visible text — the
+ * inner <a> — renders in the body Link style instead. On an h3 that is
+ * regular 16px where the heading is bold 18/32.
+ *
+ * Inheriting hands the type back to Site Settings and the widget's
+ * Typography control. Elementor has no control that stops the link style
+ * from replacing the heading.
+ */
+.elementor-widget-heading .elementor-heading-title {
+	// (0,2,1) — above the kit's `.elementor-kit-N a` (0,1,1).
+	a {
+		color: inherit;
+		font: inherit;
+		letter-spacing: inherit;
+		text-decoration: inherit;
+	}
+
+	// The kit repeats the link style at `a:hover` (0,2,1), which would tie the
+	// rule above and restore the body weight on hover.
+	a:hover {
+		color: inherit;
+		font: inherit;
+		letter-spacing: inherit;
+		text-decoration: inherit;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// A text block stops where its text stops
+// ---------------------------------------------------------------------------
+
+/**
+ * Paragraph Spacing writes `margin-block-end` on every `p`, the closing one
+ * included, so a text block always ends on a strip of margin. Inside a flex
+ * container that strip sits on top of the gap and reads as an uneven rhythm
+ * between blocks that the editor cannot explain from any panel.
+ *
+ * Only the trailing margin goes. The spacing between paragraphs stays with
+ * Elementor's control, so raising it in the editor still works — which is why
+ * this one declaration has to outrank that control: it lands at (0,3,1), and
+ * the wrapper's three classes plus `:last-child` put this above it.
+ */
+.elementor-element.elementor-widget.elementor-widget-text-editor {
+	> .elementor-widget-container > :last-child,
+	> :last-child {
+		margin-block-end: 0;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Bullets in a text block
+// ---------------------------------------------------------------------------
+
+/**
+ * The Text Editor has no list controls at all, so a `<ul>` renders with the
+ * browser's own marker: a grey disc at roughly a third of the font size,
+ * pushed in by 40px. The design asks for the branded 8px dot on the text
+ * margin, with the label — and every line it wraps onto — at 24px.
+ *
+ * Drawn as a pseudo-element rather than styled through `::marker`, because a
+ * disc has no size of its own: it scales with the font, so 8px could only be
+ * reached by lying about the font size. Everything else stays inherited —
+ * typography, colour and leading remain the widget's Typography control and
+ * Site Settings.
+ */
+.elementor-widget-text-editor {
+	ul {
+		list-style: none;
+		padding-inline-start: 0;
+	}
+
+	ul > li {
+		padding-inline-start: 24px;
+		position: relative;
+	}
+
+	ul > li::before {
+		background-color: $color-brand;
+		block-size: 8px;
+		border-radius: 50%;
+		content: "";
+		inline-size: 8px;
+		inset-inline-start: 0;
+		position: absolute;
+
+		// `1lh` is the row's own line box, so the dot keeps sitting on the
+		// middle of the first line whatever leading the kit hands down.
+		inset-block-start: calc((1lh - 8px) / 2);
+	}
+}
+
+// A row direction always sets `--flex-wrap-mobile: wrap`, and below 768px
+// Elementor also forces every container to `--width: 100%`. A download card
+// is a horizontal row at every breakpoint — thumbnail, name, button — and
+// there is no control that turns that mobile wrap off. The class is set on
+// the loop item's root container.
+.elementor .e-con.e-flex.endeavour-download-card {
+	--flex-wrap-mobile: nowrap;
+}

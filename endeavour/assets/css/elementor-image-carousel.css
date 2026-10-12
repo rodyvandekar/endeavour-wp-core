@@ -1,0 +1,38 @@
+/**
+ * Endeavour logo carousel
+ *
+ * The Image Carousel widget owns the images, the spacing and the slide
+ * count. This file only does what that widget cannot: keep each logo at
+ * the design's 40px height with its own width, while Swiper is in Auto,
+ * and let the row paint past the boxed container. The page clips at the
+ * viewport, so the overflow does not add a horizontal scrollbar.
+ *
+ * Previous and next live in the Carousel navigation widget.
+ *
+ * Source of truth for `assets/css/elementor-image-carousel.css`.
+ * Compile: npx --yes sass assets/scss/elementor-image-carousel.scss assets/css/elementor-image-carousel.css --no-source-map
+ */
+.elementor-widget-image-carousel.endeavour-logo-carousel {
+  min-width: 0;
+}
+.elementor-widget-image-carousel.endeavour-logo-carousel .swiper,
+.elementor-widget-image-carousel.endeavour-logo-carousel .swiper-wrapper {
+  min-width: 0;
+  overflow: visible;
+}
+.elementor-widget-image-carousel.endeavour-logo-carousel .swiper-slide {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  height: auto;
+  width: auto !important;
+}
+.elementor-widget-image-carousel.endeavour-logo-carousel .swiper-slide-inner {
+  width: auto;
+}
+.elementor-widget-image-carousel.endeavour-logo-carousel .swiper-slide-image {
+  display: block;
+  height: 40px;
+  max-width: none;
+  object-fit: contain;
+  width: auto;
+}

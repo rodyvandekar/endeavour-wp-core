@@ -1,0 +1,153 @@
+@charset "UTF-8";
+/**
+ * Search suggestions and live-result rows.
+ *
+ * The dropdown chrome — fill, radius, padding, shadow, width and the gap
+ * under the field — stays on the Search widget. This file only covers what
+ * that widget does not control: the suggestion sections, the 40px result
+ * row, and the shared hover. Live results use the same row.
+ *
+ * Source of truth for `assets/css/elementor-search.css`.
+ * Compile: npx --yes sass assets/scss/elementor-search.scss assets/css/elementor-search.css --no-source-map
+ */
+/**
+ * Endeavour shared design tokens
+ *
+ * Every colour resolves to an Elementor Global Color, so Site Settings stays
+ * the single source of truth. The literal after the comma is only a fallback
+ * for the moment before the kit stylesheet has loaded — never edit it to
+ * change a colour, change the global in Site Settings instead.
+ */
+/**
+ * How a hover settles.
+ *
+ * Deliberately shorter than the 0.3s Elementor uses for `.elementor-button`
+ * and its nav menu pointer. A pointer crosses several targets a second, and at
+ * 0.3s the surface is still catching up when the cursor has already moved on.
+ * Ease-out spends that budget up front, so the change has effectively happened
+ * by the time the eye lands on it.
+ */
+/**
+ * How a press lands: not animated at all.
+ *
+ * Pressed feedback answers an action the visitor just took, so it belongs in
+ * the same frame as the click — anything else reads as the interface lagging
+ * behind the finger. Only the release eases back, over the hover duration.
+ */
+/**
+ * How something travels.
+ *
+ * Movement needs time to be followed, which is a different job from a colour
+ * settling under a cursor, so this is not the hover duration. Reserved for
+ * things that actually move — the off-canvas levels, the read-more chevron.
+ */
+.elementor-widget-search .e-search-results-container {
+  flex-direction: column;
+}
+.elementor-widget-search:has(.endeavour-search-suggestions:not([hidden])) .e-search-results {
+  display: none;
+}
+
+.endeavour-search-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.endeavour-search-suggestions[hidden], .endeavour-search-suggestions:not(:has(.endeavour-search-suggestions__section:not([hidden]))) {
+  display: none;
+}
+
+.endeavour-search-suggestions__section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.endeavour-search-suggestions__section:not([hidden]) + .endeavour-search-suggestions__section:not([hidden])::before {
+  content: "";
+  display: block;
+  flex: 0 0 1px;
+  height: 1px;
+  background: var(--e-global-color-accent, #d3d7e0);
+}
+
+.elementor-widget-search .endeavour-search-suggestions__heading {
+  margin: 0;
+  color: var(--e-global-color-secondary, #1f2533);
+}
+
+.endeavour-search-suggestions__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.endeavour-search-suggestions__list li {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  margin: 0;
+}
+
+.elementor-widget-search .endeavour-search-suggestions__list a,
+.elementor-widget-search .e-search-results .elementor-heading-title a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border-radius: 8px;
+  color: var(--e-global-color-secondary, #1f2533);
+  font-family: var(--e-global-typography-secondary-font-family, Inter);
+  font-size: var(--e-global-typography-secondary-font-size, 16px);
+  font-weight: var(--e-global-typography-secondary-font-weight, 600);
+  line-height: var(--e-global-typography-secondary-line-height, 24px);
+  letter-spacing: var(--e-global-typography-secondary-letter-spacing, 0);
+  text-decoration: none;
+}
+.elementor-widget-search .endeavour-search-suggestions__list a::before,
+.elementor-widget-search .e-search-results .elementor-heading-title a::before {
+  content: "";
+  position: absolute;
+  inset: -4px -8px;
+  border-radius: inherit;
+  background-image: linear-gradient(var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863)), var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863)));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 100ms ease-out;
+}
+.elementor-widget-search .endeavour-search-suggestions__list a:hover::before,
+.elementor-widget-search .e-search-results .elementor-heading-title a:hover::before {
+  opacity: 1;
+}
+.elementor-widget-search .endeavour-search-suggestions__list a:active::before,
+.elementor-widget-search .e-search-results .elementor-heading-title a:active::before {
+  background-image: linear-gradient(var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725)), var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725)));
+  opacity: 1;
+  transition-duration: 0s;
+}
+.elementor-widget-search .endeavour-search-suggestions__list a:focus-visible,
+.elementor-widget-search .e-search-results .elementor-heading-title a:focus-visible {
+  outline: 0;
+  z-index: 1;
+}
+.elementor-widget-search .endeavour-search-suggestions__list a:focus-visible::before,
+.elementor-widget-search .e-search-results .elementor-heading-title a:focus-visible::before {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  opacity: 1;
+}
+
+.elementor-widget-search .e-search-results .e-loop-item .elementor-widget-heading,
+.elementor-widget-search .e-search-results .elementor-heading-title {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  margin: 0;
+}
+.elementor-widget-search .e-search-results .e-search-nothing-found-message {
+  margin: 0;
+  padding-block: 8px;
+}

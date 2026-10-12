@@ -1,0 +1,62 @@
+/**
+ * Endeavour Overview Link
+ *
+ * Elementor controls own typography, colours, backgrounds, border, radius,
+ * shadow, spacing and icon size. This file only provides widget structure and
+ * the keyboard-focus state Elementor does not expose.
+ *
+ * Source of truth for `assets/css/elementor-overview-link.css`.
+ */
+
+@use "tokens" as *;
+
+.elementor-widget-endeavour-overview-link {
+	width: fit-content;
+
+	.endeavour-overview-link {
+		align-items: center;
+		display: inline-flex;
+		transition:
+			background-color $hover-duration $hover-ease,
+			color $hover-duration $hover-ease,
+			box-shadow $hover-duration $hover-ease;
+		width: fit-content;
+
+		&:active {
+			transition-duration: $press-duration;
+		}
+
+		&:focus-visible {
+			@include focus-ring;
+			outline: 0;
+		}
+	}
+
+	.endeavour-overview-link__icon {
+		display: inline-flex;
+		flex: 0 0 auto;
+
+		// Without this the glyph inherits the label's 24px line box, which is
+		// taller than the square the Icon size control draws, so the icon font
+		// renders ~2px below the label's optical centre. Centring the glyph as
+		// a flex item keeps it on the label whatever size is chosen.
+		i {
+			align-items: center;
+			display: flex;
+			justify-content: center;
+			line-height: 1;
+		}
+
+		svg {
+			display: block;
+		}
+	}
+}
+
+@media (forced-colors: active) {
+	.elementor-widget-endeavour-overview-link .endeavour-overview-link:focus-visible {
+		box-shadow: none;
+		outline: 2px solid CanvasText;
+		outline-offset: 2px;
+	}
+}

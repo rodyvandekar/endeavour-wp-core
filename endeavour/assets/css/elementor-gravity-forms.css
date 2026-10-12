@@ -1,0 +1,276 @@
+@charset "UTF-8";
+/**
+ * Endeavour Gravity Forms integration
+ *
+ * Gravity Forms has no Elementor widget or responsive layout controls. This
+ * file draws every Gravity Forms form on the site to the design system
+ * (Figma 1220:3479 / 1220:3410, 523:915 / 523:1047): labels, required
+ * asterisk, field chrome, dropdown, checkbox labels, footer, error messaging
+ * and the Prominent submit button. It also maps Gravity Forms to Elementor's
+ * global input/button tokens where the kit's generic `input` and `button`
+ * rules otherwise win over Gravity Forms' generated style settings.
+ *
+ * Opt out: give the Elementor widget (or any ancestor) the class
+ * `endeavour-gf-native` and its form keeps Gravity Forms' own styling.
+ * Field states (hover, focus, error, disabled) live in elementor-form-fields
+ * and apply to every field regardless.
+ *
+ * Layout variants sit on top of the site-wide form:
+ * - `.endeavour-footer-newsletter` — email and Join side by side.
+ *
+ * Deliberately left to Site Settings > Theme Style > Form Fields: label
+ * typography and colour, and the text input / textarea font, colours,
+ * border, radius and padding. The select is not covered by that control, so
+ * it is drawn here with the same tokens.
+ *
+ * Source of truth for `assets/css/elementor-gravity-forms.css`.
+ * Compile: npx --yes sass --no-source-map assets/scss/elementor-gravity-forms.scss assets/css/elementor-gravity-forms.css
+ */
+/**
+ * Endeavour shared design tokens
+ *
+ * Every colour resolves to an Elementor Global Color, so Site Settings stays
+ * the single source of truth. The literal after the comma is only a fallback
+ * for the moment before the kit stylesheet has loaded — never edit it to
+ * change a colour, change the global in Site Settings instead.
+ */
+/**
+ * How a hover settles.
+ *
+ * Deliberately shorter than the 0.3s Elementor uses for `.elementor-button`
+ * and its nav menu pointer. A pointer crosses several targets a second, and at
+ * 0.3s the surface is still catching up when the cursor has already moved on.
+ * Ease-out spends that budget up front, so the change has effectively happened
+ * by the time the eye lands on it.
+ */
+/**
+ * How a press lands: not animated at all.
+ *
+ * Pressed feedback answers an action the visitor just took, so it belongs in
+ * the same frame as the click — anything else reads as the interface lagging
+ * behind the finger. Only the release eases back, over the hover duration.
+ */
+/**
+ * How something travels.
+ *
+ * Movement needs time to be followed, which is a different job from a colour
+ * settling under a cursor, so this is not the hover duration. Reserved for
+ * things that actually move — the off-canvas levels, the read-more chevron.
+ */
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gform_fields {
+  row-gap: 16px;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gfield_label {
+  margin-block-end: 8px;
+  font-family: var(--e-global-typography-accent-font-family, Inter);
+  font-size: var(--e-global-typography-accent-font-size, 14px);
+  font-weight: var(--e-global-typography-accent-font-weight, 500);
+  line-height: var(--e-global-typography-accent-line-height, 20px);
+  letter-spacing: var(--e-global-typography-accent-letter-spacing, 0);
+  color: var(--e-global-color-secondary, #1f2533);
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gform-field-label__text {
+  padding-inline-end: 0;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gfield_required {
+  margin-inline-start: 8px;
+  color: var(--e-global-color-text, #656f85);
+  font-size: var(--e-global-typography-accent-font-size, 14px);
+  font-weight: 400;
+  line-height: inherit;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gfield_required .gfield_required {
+  margin-inline-start: 0;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gfield_error .gfield_label {
+  color: var(--e-global-color-secondary, #1f2533);
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .ginput_container {
+  margin-block-start: 0;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) input:is([type=text], [type=email], [type=tel], [type=url], [type=password], [type=search], [type=number], [type=date]),
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) textarea {
+  box-sizing: border-box;
+  min-block-size: 40px;
+  padding: 7px 16px;
+  border: 1px solid var(--e-global-color-accent, #d3d7e0);
+  border-radius: 8px;
+  background-color: var(--e-global-color-c000001, #fff);
+  color: var(--e-global-color-secondary, #1f2533);
+  font-family: var(--e-global-typography-text-font-family, Inter);
+  font-size: var(--e-global-typography-text-font-size, 16px);
+  font-weight: var(--e-global-typography-text-font-weight, 400);
+  line-height: var(--e-global-typography-text-line-height, 24px);
+  letter-spacing: var(--e-global-typography-text-letter-spacing, 0);
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) input:is([type=text], [type=email], [type=tel], [type=url], [type=password], [type=search], [type=number], [type=date])::placeholder,
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) textarea::placeholder {
+  color: var(--e-global-color-text, #656f85);
+  opacity: 1;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) input:is([type=text], [type=email], [type=tel], [type=url], [type=password], [type=search], [type=number], [type=date]) {
+  block-size: 40px;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gfield textarea.large {
+  display: block;
+  block-size: 64px;
+  min-block-size: 64px;
+  height: 64px;
+  min-height: 64px;
+  resize: vertical;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gform_required_legend {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .ginput_container_select {
+  position: relative;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .ginput_container_select::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 16px;
+  inline-size: 20px;
+  margin-block: auto;
+  block-size: 20px;
+  background-color: var(--e-global-color-secondary, #1f2533);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6.29 11.29a1 1 0 0 1 1.42 0L10 13.59l2.29-2.3a1 1 0 1 1 1.42 1.42l-3 3a1 1 0 0 1-1.42 0l-3-3a1 1 0 0 1 0-1.42ZM9.29 4.29a1 1 0 0 1 1.42 0l3 3a1 1 0 0 1-1.42 1.42L10 6.41l-2.29 2.3a1 1 0 0 1-1.42-1.42l3-3Z'/%3E%3C/svg%3E") center/contain no-repeat;
+  pointer-events: none;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) select {
+  appearance: none;
+  block-size: 40px;
+  padding: 7px 44px 7px 16px;
+  border: 1px solid var(--e-global-color-accent, #d3d7e0);
+  border-radius: 8px;
+  background-color: var(--e-global-color-c000001, #fff);
+  color: var(--e-global-color-secondary, #1f2533);
+  font-family: var(--e-global-typography-text-font-family, Inter);
+  font-size: var(--e-global-typography-text-font-size, 16px);
+  font-weight: var(--e-global-typography-text-font-weight, 400);
+  line-height: var(--e-global-typography-text-line-height, 24px);
+  letter-spacing: var(--e-global-typography-text-letter-spacing, 0);
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) select:has(option.gf_placeholder:checked) {
+  color: var(--e-global-color-text, #656f85);
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gchoice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gchoice label {
+  max-inline-size: none;
+  margin: 0;
+  font-family: var(--e-global-typography-text-font-family, Inter);
+  font-size: var(--e-global-typography-text-font-size, 16px);
+  font-weight: var(--e-global-typography-text-font-weight, 400);
+  line-height: var(--e-global-typography-text-line-height, 24px);
+  letter-spacing: var(--e-global-typography-text-letter-spacing, 0);
+  color: var(--e-global-color-secondary, #1f2533);
+  cursor: pointer;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gform_footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 32px 0 0;
+  padding: 0;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .endeavour-form-note {
+  flex: 1 1 0;
+  margin: 0;
+  color: var(--e-global-color-text, #656f85);
+  font-family: var(--e-global-typography-d000008-font-family, Inter);
+  font-size: var(--e-global-typography-d000008-font-size, 14px);
+  font-weight: var(--e-global-typography-d000008-font-weight, 400);
+  line-height: var(--e-global-typography-d000008-line-height, 20px);
+  letter-spacing: var(--e-global-typography-d000008-letter-spacing, 0);
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gform_validation_errors {
+  border-color: var(--e-global-color-c00000d, #c21f1f);
+  border-radius: 8px;
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gform_submission_error,
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gform_validation_error_link {
+  color: var(--e-global-color-c00000d, #c21f1f);
+}
+.gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gfield_validation_message {
+  border-color: var(--e-global-color-c00000d, #c21f1f);
+  border-radius: 8px;
+  color: var(--e-global-color-c00000d, #c21f1f);
+  font-size: var(--e-global-typography-d000008-font-size, 14px);
+  line-height: var(--e-global-typography-d000008-line-height, 20px);
+}
+
+.gform_wrapper:not(.endeavour-gf-native *) form > .gform_footer :is(button[type=submit], input[type=submit]) {
+  inline-size: auto;
+  min-block-size: 40px;
+  margin-block-end: 0;
+  padding: 8px 32px;
+  border: 0;
+  border-radius: 8px;
+  background-color: var(--e-global-color-primary, #1a66ff);
+  box-shadow: 0 1px 2px 0 var(--e-global-color-c000012, rgba(0, 0, 0, 0.1607843137));
+  color: var(--e-global-color-c000001, #fff);
+  font-family: var(--e-global-typography-secondary-font-family, Inter);
+  font-size: var(--e-global-typography-secondary-font-size, 16px);
+  font-weight: var(--e-global-typography-secondary-font-weight, 600);
+  line-height: var(--e-global-typography-secondary-line-height, 24px);
+  letter-spacing: var(--e-global-typography-secondary-letter-spacing, 0);
+  transition: background-image 100ms ease-out, box-shadow 100ms ease-out;
+}
+.gform_wrapper:not(.endeavour-gf-native *) form > .gform_footer :is(button[type=submit], input[type=submit]):hover {
+  background-image: linear-gradient(var(--e-global-color-c000011, rgba(0, 0, 0, 0.0784313725)), var(--e-global-color-c000011, rgba(0, 0, 0, 0.0784313725)));
+}
+.gform_wrapper:not(.endeavour-gf-native *) form > .gform_footer :is(button[type=submit], input[type=submit]):active {
+  background-image: linear-gradient(var(--e-global-color-c000012, rgba(0, 0, 0, 0.1607843137)), var(--e-global-color-c000012, rgba(0, 0, 0, 0.1607843137)));
+  transition-duration: 0s;
+}
+.gform_wrapper:not(.endeavour-gf-native *) form > .gform_footer :is(button[type=submit], input[type=submit]):focus-visible {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+}
+
+.endeavour-footer-newsletter .gform_wrapper.gravity-theme form {
+  display: grid;
+  grid-template-columns: 256px auto;
+  gap: 16px;
+  align-items: start;
+}
+.endeavour-footer-newsletter .gform_wrapper.gravity-theme form > .gform-body,
+.endeavour-footer-newsletter .gform_wrapper.gravity-theme form > .gform_footer {
+  margin: 0;
+  padding: 0;
+}
+.endeavour-footer-newsletter.elementor-widget-shortcode .gform_wrapper.gravity-theme.gform-theme--no-framework .gform-body input[type=email] {
+  border-color: var(--e-global-color-accent, #d3d7e0);
+}
+
+@media (max-width: 767px) {
+  .gform_wrapper.gravity-theme:not(.endeavour-gf-native *) .gform_footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .gform_wrapper:not(.endeavour-gf-native *) form > .gform_footer :is(button[type=submit], input[type=submit]) {
+    inline-size: 100%;
+  }
+  .endeavour-footer-newsletter .gform_wrapper.gravity-theme form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (forced-colors: active) {
+  .gform_wrapper:not(.endeavour-gf-native *) form > .gform_footer :is(button[type=submit], input[type=submit]):focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}

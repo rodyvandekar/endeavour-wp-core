@@ -1,0 +1,30 @@
+/**
+ * Card hover shadow for containers
+ *
+ * Turn it on per container with Layout > Container > Enable container hover
+ * styling. That switch adds `endeavour-container-hover-yes`. The shadow number
+ * lives in `_tokens.scss` (`$card-hover-shadow`); do not repeat it here.
+ *
+ * Elementor already transitions `box-shadow` on `.e-con` through
+ * `--border-transition` (default 0.3s). Setting that variable keeps the
+ * editor's own transition shorthand in charge and only shortens the duration
+ * to the shared hover timing. Specificity stays at (0,2,0) / (0,3,0) on
+ * hover, below a per-container box-shadow the editor writes, so that control
+ * still wins when someone sets one.
+ *
+ * Source of truth for `assets/css/elementor-container-hover.css`.
+ * Compile: npx --yes sass assets/scss/elementor-container-hover.scss assets/css/elementor-container-hover.css
+ *
+ * Figma: Card/Hover 2017:7741.
+ */
+
+@use "tokens" as *;
+
+.elementor-element.endeavour-container-hover-yes {
+	--border-transition: #{$hover-duration};
+	transition-timing-function: $hover-ease;
+
+	&:hover {
+		box-shadow: $card-hover-shadow;
+	}
+}

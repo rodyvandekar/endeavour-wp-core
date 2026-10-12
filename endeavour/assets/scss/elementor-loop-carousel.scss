@@ -1,0 +1,41 @@
+/**
+ * Endeavour Loop Carousel — fixed item width
+ *
+ * Item width, the gap and the arrow chrome are Elementor controls. This file
+ * only does what those controls cannot: let a slide keep that width while
+ * Swiper is in Auto, and stop the carousel clipping the next slide.
+ *
+ * Previous and next live in the Carousel navigation widget, not in Swiper's
+ * own arrows, so those arrows stay out of this layout.
+ *
+ * Source of truth for `assets/css/elementor-loop-carousel.css`.
+ * Compile: npx --yes sass assets/scss/elementor-loop-carousel.scss assets/css/elementor-loop-carousel.css --no-source-map
+ */
+
+.elementor-widget-loop-carousel.endeavour-fixed-slide-width {
+	// Swiper writes an inline width from Slides on display. Auto ignores it
+	// and measures the slide, so the width set on the widget has to win.
+	.swiper-slide {
+		box-sizing: border-box;
+		flex-shrink: 0;
+		max-width: var(--endeavour-slide-width);
+		width: var(--endeavour-slide-width) !important;
+	}
+
+	// Swiper's own stylesheet sets overflow: hidden, which cuts off the next slide.
+	.swiper,
+	.swiper-wrapper,
+	.elementor-loop-container {
+		overflow: visible;
+	}
+}
+
+.endeavour-content-carousel {
+	overflow: visible;
+
+	.elementor-widget-loop-carousel.endeavour-fixed-slide-width .swiper {
+		// The slide strip is wider than the row. Without this the row grows
+		// to fit every card and the next one never peeks.
+		min-width: 0;
+	}
+}

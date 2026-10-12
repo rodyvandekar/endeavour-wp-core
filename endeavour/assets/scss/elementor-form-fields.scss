@@ -1,0 +1,197 @@
+/**
+ * Endeavour form field states
+ *
+ * Site-wide states from the design system (Figma 2001:9066 and the sibling
+ * rows through 2967:15509). Every text field, dropdown, checkbox and radio
+ * shares them:
+ *
+ * - Hover — Support / Hover (#0000000A) washed over the fill. A checked
+ *   checkbox or radio uses Support / Hover Prominent (#00000014) instead.
+ * - Keyboard focus — the shared ring: 2px white, then 2px Brand, with the
+ *   field's own 1px stroke left alone.
+ * - Error — the same ring in Support / Error.
+ * - Disabled — Alt background, muted text, no shadow and no hover.
+ *
+ * Typography, the resting border, radius and padding of a text field stay in
+ * Site Settings > Theme Style > Form Fields. Hover, focus, error and disabled
+ * are states that tab cannot draw (its focus shadow sits flush on the border),
+ * so they live here, above the kit.
+ *
+ * Dropdowns also keep Dropdown/Shadow. Open menus stay native, as the design
+ * notes. Toggles, sliders and the file drop zone are separate components and
+ * are not styled here.
+ *
+ * Source of truth for `assets/css/elementor-form-fields.css`.
+ * Compile: npx --yes sass --no-source-map assets/scss/elementor-form-fields.scss assets/css/elementor-form-fields.css
+ */
+
+@use "tokens" as *;
+
+// Icon/Check and the radio selection dot, used as masks so the glyph takes
+// the field's state colour.
+$icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M3.29 9.29a1 1 0 0 1 1.42 0L8 12.59l7.29-7.3a1 1 0 1 1 1.42 1.42l-8 8a1 1 0 0 1-1.42 0l-4-4a1 1 0 0 1 0-1.42Z'/%3E%3C/svg%3E");
+
+$dropdown-shadow: 0 1px 2px 0 $overlay-pressed;
+
+// Textual fields. Checkboxes, radios and buttons are excluded; they have
+// their own geometry below.
+$textual: 'input:is([type="text"], [type="email"], [type="tel"], [type="url"], [type="password"], [type="search"], [type="number"], [type="date"], [type="datetime-local"], [type="time"]), textarea, .elementor-field-textual:not(select):not([type="checkbox"]):not([type="radio"])';
+
+// Above the kit's input rule (0,3,1) and above a per-form field rule that
+// only names the wrapper, so a focus or error ring is not tied away.
+.elementor-kit-5 :is(#{$textual}):not([type="button"]):not([type="submit"]) {
+	transition: background-image $hover-duration $hover-ease;
+
+	&:hover:not(:disabled):not(:focus-visible) {
+		@include overlay($overlay-hover);
+	}
+
+	&:focus-visible {
+		@include focus-ring;
+		outline: 0;
+	}
+
+	&:disabled {
+		background-color: $color-alt;
+		background-image: none;
+		color: $color-muted;
+	}
+}
+
+// Dropdowns. Same hover, focus and disabled as a text field, plus
+// Dropdown/Shadow, which stays under the focus and error rings.
+.elementor-kit-5 select:not([type="button"]):not([type="submit"]) {
+	box-shadow: $dropdown-shadow;
+	transition: background-image $hover-duration $hover-ease;
+
+	&:hover:not(:disabled):not(:focus-visible) {
+		@include overlay($overlay-hover);
+	}
+
+	&:focus-visible {
+		box-shadow:
+			$dropdown-shadow,
+			0 0 0 2px $color-white,
+			0 0 0 4px $color-brand;
+		outline: 0;
+	}
+
+	&:disabled {
+		background-color: $color-alt;
+		background-image: none;
+		box-shadow: none;
+		color: $color-muted;
+	}
+}
+
+// Gravity Forms paints an invalid field's stroke red. The design keeps that
+// stroke and puts the error outside it. Elementor forms use the same ring.
+.elementor-kit-5 .gform_wrapper.gravity-theme .gfield_error :is(input, textarea):not([type="checkbox"]):not([type="radio"])[aria-invalid="true"],
+.elementor-kit-5 .elementor-field-group.elementor-error .elementor-field:not(select):not([type="checkbox"]):not([type="radio"]) {
+	border-color: $color-line;
+	@include state-ring($color-error);
+
+	&:focus-visible {
+		@include focus-ring;
+		outline: 0;
+	}
+}
+
+.elementor-kit-5 .gform_wrapper.gravity-theme .gfield_error select[aria-invalid="true"],
+.elementor-kit-5 .elementor-field-group.elementor-error select.elementor-field {
+	border-color: $color-line;
+	box-shadow:
+		$dropdown-shadow,
+		0 0 0 2px $color-white,
+		0 0 0 4px $color-error;
+
+	&:focus-visible {
+		box-shadow:
+			$dropdown-shadow,
+			0 0 0 2px $color-white,
+			0 0 0 4px $color-brand;
+		outline: 0;
+	}
+}
+
+// Checkbox — 24px, radius 6. Radio — the same square, fully round, with the
+// 10px selection dot from the Endeavour icon.
+.elementor-kit-5 input:is([type="checkbox"], [type="radio"]):not([type="button"]):not([type="submit"]) {
+	appearance: none;
+	position: relative;
+	flex: none;
+	inline-size: 24px;
+	block-size: 24px;
+	margin: 0;
+	padding: 0;
+	border: 1px solid $color-line;
+	border-radius: 6px;
+	background-color: $color-white;
+	cursor: pointer;
+	transition: background-image $hover-duration $hover-ease;
+
+	&[type="radio"] {
+		border-radius: 50%;
+	}
+
+	&:hover:not(:disabled):not(:checked):not(:focus-visible) {
+		@include overlay($overlay-hover);
+	}
+
+	&:checked {
+		border-color: $color-brand;
+		background-color: $color-brand;
+
+		&:hover:not(:disabled):not(:focus-visible) {
+			@include overlay($overlay-hover-prominent);
+		}
+
+		&::before {
+			content: "";
+			position: absolute;
+			background-color: $color-white;
+		}
+	}
+
+	&[type="checkbox"]:checked::before {
+		inset: 1px;
+		mask: $icon-check center / 20px no-repeat;
+	}
+
+	&[type="radio"]:checked::before {
+		inset: 7px;
+		border-radius: 50%;
+	}
+
+	&:focus-visible {
+		@include focus-ring;
+		outline: 0;
+	}
+
+	&:disabled {
+		background-image: none;
+		cursor: default;
+
+		&:not(:checked) {
+			background-color: $color-alt;
+		}
+
+		&:checked {
+			border-color: $color-muted;
+			background-color: $color-muted;
+		}
+	}
+}
+
+@media (forced-colors: active) {
+	.elementor-kit-5 :is(#{$textual}):focus-visible,
+	.elementor-kit-5 input:is([type="checkbox"], [type="radio"]):focus-visible {
+		outline: 2px solid CanvasText;
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+
+	.elementor-kit-5 input:is([type="checkbox"], [type="radio"]):checked::before {
+		background-color: CanvasText;
+	}
+}

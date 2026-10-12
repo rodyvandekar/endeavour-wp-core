@@ -1,0 +1,399 @@
+@charset "UTF-8";
+/**
+ * Endeavour Off-Canvas Menu
+ *
+ * Styles for the custom `endeavour-offcanvas-menu` widget. Elementor Pro's
+ * Off-Canvas widget owns the panel around this — width, background, overlay,
+ * position, open and close. Nothing here touches that.
+ *
+ * Every value a designer would reach for is a control on the widget, written
+ * to a custom property on the wrapper. This file only reads those properties,
+ * so the declarations below are structure, not styling decisions: change a
+ * colour or a spacing in the editor, not here. The literal after the comma is
+ * the design-system default for the moment before Elementor's CSS has loaded.
+ *
+ * What genuinely lives here, because Elementor has no control for it:
+ * - the slide between levels
+ * - `:active` and `:focus-visible`
+ * - undoing the theme's own `a` and `button` styling on the rows
+ *
+ * Specificity: rules are written as `.endeavour-offcanvas-menu
+ * .endeavour-offcanvas-menu__x`, two classes. That clears the kit's global
+ * link and button styling — `.elementor-kit-N a` is one class and one type —
+ * while staying well under Elementor's per-widget output at four classes, so
+ * every control above still wins. Concatenating BEM with `&__x` would land on
+ * a single class and lose the underline fight.
+ *
+ * Source of truth for `assets/css/elementor-offcanvas-menu.css`.
+ * Compile: npx --yes sass assets/scss/elementor-offcanvas-menu.scss assets/css/elementor-offcanvas-menu.css
+ */
+/**
+ * Endeavour shared design tokens
+ *
+ * Every colour resolves to an Elementor Global Color, so Site Settings stays
+ * the single source of truth. The literal after the comma is only a fallback
+ * for the moment before the kit stylesheet has loaded — never edit it to
+ * change a colour, change the global in Site Settings instead.
+ */
+/**
+ * How a hover settles.
+ *
+ * Deliberately shorter than the 0.3s Elementor uses for `.elementor-button`
+ * and its nav menu pointer. A pointer crosses several targets a second, and at
+ * 0.3s the surface is still catching up when the cursor has already moved on.
+ * Ease-out spends that budget up front, so the change has effectively happened
+ * by the time the eye lands on it.
+ */
+/**
+ * How a press lands: not animated at all.
+ *
+ * Pressed feedback answers an action the visitor just took, so it belongs in
+ * the same frame as the click — anything else reads as the interface lagging
+ * behind the finger. Only the release eases back, over the hover duration.
+ */
+/**
+ * How something travels.
+ *
+ * Movement needs time to be followed, which is a different job from a colour
+ * settling under a cursor, so this is not the hover duration. Reserved for
+ * things that actually move — the off-canvas levels, the read-more chevron.
+ */
+/**
+ * How far the Back control's hover surface reaches past the text column.
+ *
+ * It is the Link button's horizontal padding, applied as a negative margin so
+ * the label still lines up with the rows below. The clip that hides the
+ * off-screen levels has to give that much room back, or the surface is sliced
+ * off flush with the column.
+ */
+/**
+ * The curve the arriving level travels on.
+ *
+ * The duration stays the shared 0.3s; only the easing is local, because a
+ * level crosses the full width of the column and the browser's default spends
+ * that distance unevenly. This one is halfway at halfway and then decelerates
+ * — 50% / 83% / 96% of the distance at a half, two thirds and four fifths of
+ * the time. The slow opening matters here: the level is still transparent for
+ * the first half, so a curve that hurries would do most of its travelling
+ * unseen and only appear for the last few pixels.
+ */
+/**
+ * The curve the leaving level travels on.
+ *
+ * Deliberately not the arriving one. A level that decelerates is 61% of the
+ * way out after 120ms, so it has largely left the column before the fade has
+ * anything left to show and the eye only registers a slide. This gentle
+ * ease-in holds it back — 31% at 150ms, the moment it reaches zero opacity —
+ * so it visibly dims while it moves, and only then accelerates away, by which
+ * time there is nothing left to see.
+ */
+/**
+ * How long a level takes to fade, and so also how long the other one waits.
+ *
+ * Half the slide each: the leaving level fades over the first half and the
+ * arriving one over the second. Sequencing them rather than crossing them
+ * keeps two half-transparent levels from ever being legible at once, which
+ * matters because the levels have no background of their own and their rows
+ * would read as doubled text.
+ */
+/**
+ * Shorthand for the divider, which the list and every row draw alike.
+ */
+/**
+ * Strip the theme's link and button chrome from a row.
+ *
+ * Both row types have to look identical, but one is an `<a>` carrying the
+ * kit's underline and the other a `<button>` carrying the theme's border,
+ * background and font.
+ */
+.endeavour-offcanvas-menu {
+  /**
+   * The clip that hides the levels parked off to the side.
+   *
+   * `clip` on one axis and `visible` on the other keeps them from causing a
+   * horizontal scrollbar without turning this into a scroll container, which
+   * would crop the focus ring on the top row.
+   *
+   * The clip runs along the padding box, so the box is widened by the Back
+   * control's overhang and the width handed straight back as padding: the
+   * column keeps its size, the clip edge moves outside it, and the hover
+   * surface is no longer sliced off. `overflow-clip-margin` would say this in
+   * one line, but Safari ignores it and slices the surface anyway.
+   */
+  margin-inline: -8px;
+  overflow-x: clip;
+  overflow-y: visible;
+  padding-inline: 8px;
+  /**
+   * Every level occupies the same grid cell, which is what lets one slide out
+   * while the next slides in.
+   *
+   * A separate box from the clip above so that it still measures exactly one
+   * column wide: an absolutely positioned grid item resolves against its grid
+   * area, and a grid area on a padded grid container turns out to be neither
+   * the column nor the padding box, leaving the parked levels 8px narrow.
+   */
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__levels {
+  display: grid;
+  position: relative;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__panel {
+  grid-area: 1/1;
+  min-width: 0;
+  /**
+   * Only the level in view is measured. Left in the grid cell, every
+   * level would stack into the same track and the cell would take the
+   * height of the longest one, so whatever the editor puts below the
+   * menu — the Contact button — would sit under a gap the length of the
+   * deepest submenu instead of under the last row.
+   */
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__panel:not(.is-current) {
+  inline-size: 100%;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  position: absolute;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__panel {
+  transform: translateX(calc(100% + 8px));
+  visibility: hidden;
+  opacity: 0;
+  /**
+   * Visibility is a discrete property, so it is timed per direction
+   * rather than eased. Leaving: delay the flip until the slide is over,
+   * so the outgoing level stays on screen for the whole animation
+   * instead of disappearing on frame one.
+   */
+  transition: opacity 0.15s linear, transform 0.3s cubic-bezier(0.4, 0, 0.7, 0.6), visibility 0s 0.3s;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__panel.is-current {
+  /**
+   * The fade waits out the one on the level being left, so only
+   * one of them is ever legible.
+   *
+   * Visibility flips immediately, though. With a delay the level is
+   * still hidden when the script moves focus into it, and the
+   * browser refuses to focus anything in a hidden subtree — focus
+   * would fall back to the document instead of landing on Back.
+   */
+  transition: opacity 0.15s 0.15s linear, transform 0.3s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s;
+  opacity: 1;
+  transform: none;
+  /**
+   * `inherit`, not `visible`: a sticky header is cloned into a
+   * hidden spacer, panel and all. The clone's off-canvas is fixed,
+   * so it escapes the spacer's box and only that hidden stays
+   * between it and the screen — `visible` here punches through it
+   * and paints a second, out-of-sync menu over the real one, which
+   * also swallows the clicks. Inheriting keeps the clone hidden and
+   * still resolves to visible in the header the visitor sees.
+   */
+  visibility: inherit;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__panel.is-parent {
+  transform: translateX(calc(-100% - 8px));
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-color: var(--endv-menu-divider-color, var(--e-global-color-accent, #d3d7e0));
+  border-style: var(--endv-menu-divider-style, solid);
+  border-width: 0;
+  border-top-width: var(--endv-menu-divider-width, 1px);
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__item {
+  border-color: var(--endv-menu-divider-color, var(--e-global-color-accent, #d3d7e0));
+  border-style: var(--endv-menu-divider-style, solid);
+  border-width: 0;
+  border-bottom-width: var(--endv-menu-divider-width, 1px);
+}
+.endeavour-offcanvas-menu {
+  /**
+   * One row. The same class for a link and for a submenu trigger, so both
+   * answer to one set of controls; the trigger is a `<button>` because it
+   * navigates nowhere.
+   */
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__row {
+  appearance: none;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: none;
+  text-transform: none;
+  align-items: center;
+  color: var(--endv-menu-item-color, var(--e-global-color-secondary, #1f2533));
+  cursor: pointer;
+  display: flex;
+  gap: var(--endv-menu-indicator-gap, 16px);
+  justify-content: space-between;
+  padding: var(--endv-menu-item-padding, 16px 0);
+  position: relative;
+  text-align: start;
+  width: 100%;
+  transition: background-color 100ms ease-out, color 100ms ease-out;
+  /**
+   * A row with a submenu is a `<button>`, so Site Settings > Buttons
+   * hands it the kit's button chrome on hover and focus: a 1px border,
+   * an 8px radius and a shadow. That outranks `unstyled-control` above,
+   * which only covers the resting state, so the one row that opens a
+   * level would bulge into a rounded box while its sibling links stay
+   * flat. Restated here, where it beats the kit.
+   */
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__row:hover, .endeavour-offcanvas-menu .endeavour-offcanvas-menu__row:focus {
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__row:hover {
+  background-color: var(--endv-menu-item-background-hover, var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863)));
+  color: var(--endv-menu-item-color-hover, var(--e-global-color-secondary, #1f2533));
+  text-decoration: none;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__row {
+  /**
+   * Replacing the colour rather than layering an overlay on top of it:
+   * the hover tint is already painted by the control above, and a second
+   * translucent layer would compose past the design's pressed value.
+   */
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__row:active {
+  background-color: var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725));
+  transition-duration: 0s;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__row:focus-visible {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+  z-index: 1;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__indicator {
+  align-items: center;
+  color: var(--endv-menu-indicator-color, var(--e-global-color-secondary, #1f2533));
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: var(--endv-menu-indicator-size, 20px);
+  line-height: 1;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__indicator svg {
+  block-size: 1em;
+  fill: currentColor;
+  inline-size: 1em;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__header {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--endv-menu-back-spacing, 16px);
+  margin-bottom: var(--endv-menu-title-spacing, 64px);
+}
+.endeavour-offcanvas-menu {
+  /**
+   * The back control is the design system's textual Link button, so it
+   * carries that button's geometry and hover: 4px/8px around the label on an
+   * 8px rounded surface, pulled back by its own horizontal padding so the
+   * label still lines up with the rows below it.
+   */
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__back {
+  appearance: none;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: none;
+  text-transform: none;
+  align-items: center;
+  border-radius: 8px;
+  color: var(--endv-menu-back-color, var(--e-global-color-primary, #1a66ff));
+  cursor: pointer;
+  display: inline-flex;
+  gap: var(--endv-menu-back-gap, 8px);
+  margin-inline-start: -8px;
+  padding: 4px 8px;
+  transition: background-color 100ms ease-out;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__back:hover {
+  background-color: var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863));
+  /**
+   * The kit's Body text link style repaints `a:hover` in ink and
+   * underlines it. One class, one pseudo-class and a type outrank
+   * the two classes of the resting state above, so the colour has to
+   * be restated here, where the pseudo-class evens the count.
+   */
+  color: var(--endv-menu-back-color, var(--e-global-color-primary, #1a66ff));
+  text-decoration: none;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__back:active {
+  background-color: var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725));
+  transition-duration: 0s;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__back:focus-visible {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__back-icon {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: var(--endv-menu-back-icon-size, 20px);
+  line-height: 1;
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__back-icon svg {
+  block-size: 1em;
+  fill: currentColor;
+  inline-size: 1em;
+}
+.endeavour-offcanvas-menu {
+  /**
+   * The heading inherits its type from Site Settings > Theme Style for the
+   * tag chosen in the widget, because headings are not Global Fonts in this
+   * kit. Only the colour and the spacing are controls.
+   */
+}
+.endeavour-offcanvas-menu .endeavour-offcanvas-menu__title {
+  color: var(--endv-menu-title-color, var(--e-global-color-secondary, #1f2533));
+  margin: 0;
+}
+
+/**
+ * Everything the editor placed beside the menu, while a submenu is open.
+ *
+ * The script marks them, because which elements sit next to the menu is an
+ * editor decision; this only takes them out of the flow. Scoped to the panel
+ * so the two classes clear Elementor's `.e-con`, which hands containers their
+ * `display` and would otherwise tie and win on source order.
+ */
+.e-off-canvas [data-endeavour-menu-hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .endeavour-offcanvas-menu .endeavour-offcanvas-menu__panel,
+  .endeavour-offcanvas-menu .endeavour-offcanvas-menu__panel.is-current {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .endeavour-offcanvas-menu .endeavour-offcanvas-menu__row:focus-visible,
+  .endeavour-offcanvas-menu .endeavour-offcanvas-menu__back:focus-visible {
+    box-shadow: none;
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+}

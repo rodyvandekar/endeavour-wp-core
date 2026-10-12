@@ -1,0 +1,116 @@
+@charset "UTF-8";
+/**
+ * Endeavour Share widget
+ *
+ * The button chrome — fill, border, radius, type, shadow and the Other
+ * button's padding — belongs to Site Settings > Buttons, through the shared
+ * `.elementor-button` class. This file only adds what that kit rule cannot:
+ * the row, the icon-only square, and states Elementor does not paint.
+ *
+ * Source of truth for `assets/css/elementor-share.css`.
+ * Compile: npx --yes sass assets/scss/elementor-share.scss assets/css/elementor-share.css
+ */
+/**
+ * Endeavour shared design tokens
+ *
+ * Every colour resolves to an Elementor Global Color, so Site Settings stays
+ * the single source of truth. The literal after the comma is only a fallback
+ * for the moment before the kit stylesheet has loaded — never edit it to
+ * change a colour, change the global in Site Settings instead.
+ */
+/**
+ * How a hover settles.
+ *
+ * Deliberately shorter than the 0.3s Elementor uses for `.elementor-button`
+ * and its nav menu pointer. A pointer crosses several targets a second, and at
+ * 0.3s the surface is still catching up when the cursor has already moved on.
+ * Ease-out spends that budget up front, so the change has effectively happened
+ * by the time the eye lands on it.
+ */
+/**
+ * How a press lands: not animated at all.
+ *
+ * Pressed feedback answers an action the visitor just took, so it belongs in
+ * the same frame as the click — anything else reads as the interface lagging
+ * behind the finger. Only the release eases back, over the hover duration.
+ */
+/**
+ * How something travels.
+ *
+ * Movement needs time to be followed, which is a different job from a colour
+ * settling under a cursor, so this is not the hover duration. Reserved for
+ * things that actually move — the off-canvas levels, the read-more chevron.
+ */
+.elementor-element.elementor-widget-endeavour-share .endeavour-share {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--endv-share-title-gap, 32px);
+  max-width: 100%;
+}
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__title {
+  margin: 0;
+  max-width: var(--endv-share-title-max, 770px);
+}
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--endv-share-gap, 16px);
+  max-width: 100%;
+}
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__more:not([hidden]) {
+  display: contents;
+}
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__button,
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__toggle {
+  box-sizing: border-box;
+  margin: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition-duration: 100ms;
+  transition-timing-function: ease-out;
+}
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__button--icon {
+  align-items: center;
+  block-size: var(--endv-share-button-size, 40px);
+  display: inline-flex;
+  inline-size: var(--endv-share-button-size, 40px);
+  justify-content: center;
+  padding: 0;
+}
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__icon {
+  display: inline-flex;
+  font-size: var(--endv-share-icon-size, 20px);
+  line-height: 1;
+}
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__toggle {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+}
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__toggle-icon {
+  display: inline-flex;
+}
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__toggle-icon[hidden] {
+  display: none;
+}
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__button:active,
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__toggle:active {
+  background-image: linear-gradient(var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725)), var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725)));
+  transition-duration: 0s;
+}
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__button:focus-visible,
+.elementor-element.elementor-widget-endeavour-share .endeavour-share__toggle:focus-visible {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+}
+
+@media (forced-colors: active) {
+  .elementor-element.elementor-widget-endeavour-share .endeavour-share__button:focus-visible,
+  .elementor-element.elementor-widget-endeavour-share .endeavour-share__toggle:focus-visible {
+    box-shadow: none;
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+}

@@ -1,0 +1,139 @@
+/**
+ * Search suggestions and live-result rows.
+ *
+ * The dropdown chrome — fill, radius, padding, shadow, width and the gap
+ * under the field — stays on the Search widget. This file only covers what
+ * that widget does not control: the suggestion sections, the 40px result
+ * row, and the shared hover. Live results use the same row.
+ *
+ * Source of truth for `assets/css/elementor-search.css`.
+ * Compile: npx --yes sass assets/scss/elementor-search.scss assets/css/elementor-search.css --no-source-map
+ */
+
+@use "tokens" as *;
+
+.elementor-widget-search {
+	.e-search-results-container {
+		flex-direction: column;
+	}
+
+	// An empty results list is already hidden. While the suggestions are up,
+	// a previous result set must not sit beside them.
+	&:has(.endeavour-search-suggestions:not([hidden])) .e-search-results {
+		display: none;
+	}
+}
+
+.endeavour-search-suggestions {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+
+	&[hidden],
+	&:not(:has(.endeavour-search-suggestions__section:not([hidden]))) {
+		display: none;
+	}
+}
+
+// The modal is one column with 16px between the heading, the list and the
+// rule. The rule is the first item of the following section, so the parent
+// gap is the space above it and the section gap is the space below it.
+.endeavour-search-suggestions__section {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.endeavour-search-suggestions__section:not([hidden]) + .endeavour-search-suggestions__section:not([hidden])::before {
+	content: "";
+	display: block;
+	flex: 0 0 1px;
+	height: 1px;
+	background: $color-line;
+}
+
+.elementor-widget-search .endeavour-search-suggestions__heading {
+	margin: 0;
+	color: $color-ink;
+}
+
+.endeavour-search-suggestions__list {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.endeavour-search-suggestions__list li {
+	display: flex;
+	align-items: center;
+	min-height: 40px;
+	margin: 0;
+}
+
+// The row stays 40px. The hover is the Link button's surface: 4px/8px around
+// the label, grown from a pseudo-element so the text does not shift.
+.elementor-widget-search .endeavour-search-suggestions__list a,
+.elementor-widget-search .e-search-results .elementor-heading-title a {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	max-width: 100%;
+	border-radius: $hover-radius;
+	color: $color-ink;
+	font-family: var(--e-global-typography-secondary-font-family, Inter);
+	font-size: var(--e-global-typography-secondary-font-size, 16px);
+	font-weight: var(--e-global-typography-secondary-font-weight, 600);
+	line-height: var(--e-global-typography-secondary-line-height, 24px);
+	letter-spacing: var(--e-global-typography-secondary-letter-spacing, 0);
+	text-decoration: none;
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: $hover-inset-text;
+		border-radius: inherit;
+		background-image: linear-gradient($overlay-hover, $overlay-hover);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity $hover-duration $hover-ease;
+	}
+
+	&:hover::before {
+		opacity: 1;
+	}
+
+	&:active::before {
+		background-image: linear-gradient($overlay-pressed, $overlay-pressed);
+		opacity: 1;
+		transition-duration: $press-duration;
+	}
+
+	&:focus-visible {
+		outline: 0;
+		z-index: 1;
+
+		&::before {
+			@include focus-ring;
+			opacity: 1;
+		}
+	}
+}
+
+.elementor-widget-search .e-search-results {
+	.e-loop-item .elementor-widget-heading,
+	.elementor-heading-title {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		min-height: 40px;
+		margin: 0;
+	}
+
+	.e-search-nothing-found-message {
+		margin: 0;
+		padding-block: 8px;
+	}
+}

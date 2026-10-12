@@ -1,0 +1,18 @@
+/**
+ * Endeavour carousel navigation
+ *
+ * Button paint, size and type live on the Button widget styles. Each button
+ * is wrapped in `.elementor-widget-button` plus its type class so Default,
+ * Prominent and Link apply unchanged.
+ *
+ * This file only lines the two buttons up. The gap is the widget's Gap control.
+ *
+ * Source of truth for `assets/css/elementor-carousel-nav.css`.
+ * Compile: npx --yes sass assets/scss/elementor-carousel-nav.scss assets/css/elementor-carousel-nav.css --no-source-map
+ */
+
+.elementor-widget-endeavour-carousel-nav .endeavour-carousel-nav {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+}

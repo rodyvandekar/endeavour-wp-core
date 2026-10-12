@@ -1,0 +1,181 @@
+@charset "UTF-8";
+/**
+ * Endeavour form field states
+ *
+ * Site-wide states from the design system (Figma 2001:9066 and the sibling
+ * rows through 2967:15509). Every text field, dropdown, checkbox and radio
+ * shares them:
+ *
+ * - Hover — Support / Hover (#0000000A) washed over the fill. A checked
+ *   checkbox or radio uses Support / Hover Prominent (#00000014) instead.
+ * - Keyboard focus — the shared ring: 2px white, then 2px Brand, with the
+ *   field's own 1px stroke left alone.
+ * - Error — the same ring in Support / Error.
+ * - Disabled — Alt background, muted text, no shadow and no hover.
+ *
+ * Typography, the resting border, radius and padding of a text field stay in
+ * Site Settings > Theme Style > Form Fields. Hover, focus, error and disabled
+ * are states that tab cannot draw (its focus shadow sits flush on the border),
+ * so they live here, above the kit.
+ *
+ * Dropdowns also keep Dropdown/Shadow. Open menus stay native, as the design
+ * notes. Toggles, sliders and the file drop zone are separate components and
+ * are not styled here.
+ *
+ * Source of truth for `assets/css/elementor-form-fields.css`.
+ * Compile: npx --yes sass --no-source-map assets/scss/elementor-form-fields.scss assets/css/elementor-form-fields.css
+ */
+/**
+ * Endeavour shared design tokens
+ *
+ * Every colour resolves to an Elementor Global Color, so Site Settings stays
+ * the single source of truth. The literal after the comma is only a fallback
+ * for the moment before the kit stylesheet has loaded — never edit it to
+ * change a colour, change the global in Site Settings instead.
+ */
+/**
+ * How a hover settles.
+ *
+ * Deliberately shorter than the 0.3s Elementor uses for `.elementor-button`
+ * and its nav menu pointer. A pointer crosses several targets a second, and at
+ * 0.3s the surface is still catching up when the cursor has already moved on.
+ * Ease-out spends that budget up front, so the change has effectively happened
+ * by the time the eye lands on it.
+ */
+/**
+ * How a press lands: not animated at all.
+ *
+ * Pressed feedback answers an action the visitor just took, so it belongs in
+ * the same frame as the click — anything else reads as the interface lagging
+ * behind the finger. Only the release eases back, over the hover duration.
+ */
+/**
+ * How something travels.
+ *
+ * Movement needs time to be followed, which is a different job from a colour
+ * settling under a cursor, so this is not the hover duration. Reserved for
+ * things that actually move — the off-canvas levels, the read-more chevron.
+ */
+.elementor-kit-5 :is(input:is([type=text], [type=email], [type=tel], [type=url], [type=password], [type=search], [type=number], [type=date], [type=datetime-local], [type=time]), textarea, .elementor-field-textual:not(select):not([type=checkbox]):not([type=radio])):not([type=button]):not([type=submit]) {
+  transition: background-image 100ms ease-out;
+}
+.elementor-kit-5 :is(input:is([type=text], [type=email], [type=tel], [type=url], [type=password], [type=search], [type=number], [type=date], [type=datetime-local], [type=time]), textarea, .elementor-field-textual:not(select):not([type=checkbox]):not([type=radio])):not([type=button]):not([type=submit]):hover:not(:disabled):not(:focus-visible) {
+  background-image: linear-gradient(var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863)), var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863)));
+}
+.elementor-kit-5 :is(input:is([type=text], [type=email], [type=tel], [type=url], [type=password], [type=search], [type=number], [type=date], [type=datetime-local], [type=time]), textarea, .elementor-field-textual:not(select):not([type=checkbox]):not([type=radio])):not([type=button]):not([type=submit]):focus-visible {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+}
+.elementor-kit-5 :is(input:is([type=text], [type=email], [type=tel], [type=url], [type=password], [type=search], [type=number], [type=date], [type=datetime-local], [type=time]), textarea, .elementor-field-textual:not(select):not([type=checkbox]):not([type=radio])):not([type=button]):not([type=submit]):disabled {
+  background-color: var(--e-global-color-c000002, #f7f8fa);
+  background-image: none;
+  color: var(--e-global-color-text, #656f85);
+}
+
+.elementor-kit-5 select:not([type=button]):not([type=submit]) {
+  box-shadow: 0 1px 2px 0 var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725));
+  transition: background-image 100ms ease-out;
+}
+.elementor-kit-5 select:not([type=button]):not([type=submit]):hover:not(:disabled):not(:focus-visible) {
+  background-image: linear-gradient(var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863)), var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863)));
+}
+.elementor-kit-5 select:not([type=button]):not([type=submit]):focus-visible {
+  box-shadow: 0 1px 2px 0 var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725)), 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+}
+.elementor-kit-5 select:not([type=button]):not([type=submit]):disabled {
+  background-color: var(--e-global-color-c000002, #f7f8fa);
+  background-image: none;
+  box-shadow: none;
+  color: var(--e-global-color-text, #656f85);
+}
+
+.elementor-kit-5 .gform_wrapper.gravity-theme .gfield_error :is(input, textarea):not([type=checkbox]):not([type=radio])[aria-invalid=true],
+.elementor-kit-5 .elementor-field-group.elementor-error .elementor-field:not(select):not([type=checkbox]):not([type=radio]) {
+  border-color: var(--e-global-color-accent, #d3d7e0);
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-c00000d, #c21f1f);
+}
+.elementor-kit-5 .gform_wrapper.gravity-theme .gfield_error :is(input, textarea):not([type=checkbox]):not([type=radio])[aria-invalid=true]:focus-visible,
+.elementor-kit-5 .elementor-field-group.elementor-error .elementor-field:not(select):not([type=checkbox]):not([type=radio]):focus-visible {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+}
+
+.elementor-kit-5 .gform_wrapper.gravity-theme .gfield_error select[aria-invalid=true],
+.elementor-kit-5 .elementor-field-group.elementor-error select.elementor-field {
+  border-color: var(--e-global-color-accent, #d3d7e0);
+  box-shadow: 0 1px 2px 0 var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725)), 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-c00000d, #c21f1f);
+}
+.elementor-kit-5 .gform_wrapper.gravity-theme .gfield_error select[aria-invalid=true]:focus-visible,
+.elementor-kit-5 .elementor-field-group.elementor-error select.elementor-field:focus-visible {
+  box-shadow: 0 1px 2px 0 var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725)), 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+}
+
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit]) {
+  appearance: none;
+  position: relative;
+  flex: none;
+  inline-size: 24px;
+  block-size: 24px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--e-global-color-accent, #d3d7e0);
+  border-radius: 6px;
+  background-color: var(--e-global-color-c000001, #fff);
+  cursor: pointer;
+  transition: background-image 100ms ease-out;
+}
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit])[type=radio] {
+  border-radius: 50%;
+}
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit]):hover:not(:disabled):not(:checked):not(:focus-visible) {
+  background-image: linear-gradient(var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863)), var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863)));
+}
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit]):checked {
+  border-color: var(--e-global-color-primary, #1a66ff);
+  background-color: var(--e-global-color-primary, #1a66ff);
+}
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit]):checked:hover:not(:disabled):not(:focus-visible) {
+  background-image: linear-gradient(var(--e-global-color-c000011, rgba(0, 0, 0, 0.0784313725)), var(--e-global-color-c000011, rgba(0, 0, 0, 0.0784313725)));
+}
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit]):checked::before {
+  content: "";
+  position: absolute;
+  background-color: var(--e-global-color-c000001, #fff);
+}
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit])[type=checkbox]:checked::before {
+  inset: 1px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M3.29 9.29a1 1 0 0 1 1.42 0L8 12.59l7.29-7.3a1 1 0 1 1 1.42 1.42l-8 8a1 1 0 0 1-1.42 0l-4-4a1 1 0 0 1 0-1.42Z'/%3E%3C/svg%3E") center/20px no-repeat;
+}
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit])[type=radio]:checked::before {
+  inset: 7px;
+  border-radius: 50%;
+}
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit]):focus-visible {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+}
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit]):disabled {
+  background-image: none;
+  cursor: default;
+}
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit]):disabled:not(:checked) {
+  background-color: var(--e-global-color-c000002, #f7f8fa);
+}
+.elementor-kit-5 input:is([type=checkbox], [type=radio]):not([type=button]):not([type=submit]):disabled:checked {
+  border-color: var(--e-global-color-text, #656f85);
+  background-color: var(--e-global-color-text, #656f85);
+}
+
+@media (forced-colors: active) {
+  .elementor-kit-5 :is(input:is([type=text], [type=email], [type=tel], [type=url], [type=password], [type=search], [type=number], [type=date], [type=datetime-local], [type=time]), textarea, .elementor-field-textual:not(select):not([type=checkbox]):not([type=radio])):focus-visible,
+  .elementor-kit-5 input:is([type=checkbox], [type=radio]):focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+  .elementor-kit-5 input:is([type=checkbox], [type=radio]):checked::before {
+    background-color: CanvasText;
+  }
+}

@@ -1,0 +1,281 @@
+/**
+ * Endeavour hover for clickable icons and icon + label rows
+ *
+ * Design rule: everything clickable gets the Link button's hover — the
+ * Support / Hover overlay on a rounded surface, fading in over the shared
+ * hover duration, with the pressed surface landing instantly.
+ *
+ * Menu items and the mobile menu toggle are NOT handled here. Elementor Pro
+ * has real controls for those (Nav Menu > Pointer: Background, and the toggle's
+ * Hover tab), so they are configured in the widget and stay editable.
+ *
+ * The Icon widget in its default view and an Icon List row have no hover
+ * background control at all, which is why they need this file.
+ *
+ * The overlay is a pseudo-element rather than padding plus a negative margin.
+ * That keeps `icon_padding` and the list's spacing controls entirely
+ * editor-owned, and nothing on the row moves when the surface appears.
+ *
+ * Source of truth for `assets/css/elementor-interactive-hover.css`.
+ * Compile: npx --yes sass assets/scss/elementor-interactive-hover.scss assets/css/elementor-interactive-hover.css
+ */
+
+@use "tokens" as *;
+
+/**
+ * Grow a hover surface out of an element without touching its box model.
+ *
+ * @param {List} $inset Negative offsets, so the surface is larger than the
+ *                      element it belongs to.
+ */
+@mixin hover-surface($inset) {
+	position: relative;
+
+	// Elementor blankets the host in `transition: all .3s`, which is what its
+	// own colour controls ride on. One hover, one timing — otherwise the glyph
+	// and the surface behind it settle at different moments.
+	transition-duration: $hover-duration;
+	transition-timing-function: $hover-ease;
+
+	&::before {
+		background-color: $overlay-hover;
+		border-radius: $hover-radius;
+		content: "";
+		inset: $inset;
+		opacity: 0;
+		pointer-events: none;
+		position: absolute;
+		transition:
+			background-color $hover-duration $hover-ease,
+			opacity $hover-duration $hover-ease;
+	}
+
+	// Lift the icon and label into the positioned layer so they paint above the
+	// surface. Elementor's own pointer uses a negative z-index instead, which
+	// would drop the surface behind the header's background.
+	> * {
+		position: relative;
+	}
+
+	&:hover::before {
+		opacity: 1;
+	}
+
+	&:active {
+		transition-duration: $press-duration;
+
+		&::before {
+			background-color: $overlay-pressed;
+			opacity: 1;
+			transition-duration: $press-duration;
+		}
+	}
+
+	// The ring belongs on the surface, not the element, so it traces the target
+	// the user actually clicks rather than the glyph inside it.
+	&:focus-visible {
+		outline: 0;
+
+		&::before {
+			@include focus-ring;
+			opacity: 1;
+		}
+	}
+}
+
+// A bare clickable icon, sized like the Link button's icon-only square.
+.elementor-widget-icon a.elementor-icon {
+	@include hover-surface($hover-inset-icon);
+}
+
+// Icon plus label. Only rows that are actually links get a surface — a plain
+// USP row is not clickable and must not suggest that it is. Post Info builds
+// the same rows, and links only the meta items the editor switched Link on for.
+.elementor-widget-icon-list .elementor-icon-list-item > a,
+.elementor-widget-post-info .elementor-icon-list-item > a {
+	@include hover-surface($hover-inset-text);
+}
+
+/**
+ * A term link marked `endeavour-textual-link`.
+ *
+ * The text editor has no hover surface of its own, and the kit underlines
+ * every anchor. The class gives that anchor the Link button's box: 4px/8px
+ * around the label, pulled back with the same negative margin so the row
+ * does not move, then the shared hover and press colours. Colour and type
+ * stay on the widget, inherited through the anchor.
+ */
+.elementor-element.elementor-widget-text-editor.endeavour-textual-link a {
+	border-radius: $hover-radius;
+	color: inherit;
+	font: inherit;
+	margin: -4px -8px;
+	padding: 4px 8px;
+	text-decoration: none;
+	transition: background-color $hover-duration $hover-ease;
+
+	&:hover {
+		background-color: $overlay-hover;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	&:active {
+		background-color: $overlay-pressed;
+		transition-duration: $press-duration;
+	}
+
+	&:focus-visible {
+		@include focus-ring;
+		outline: 0;
+	}
+}
+
+/**
+ * The Nested Accordion title already owns its hover surface: Background >
+ * Hover is a real control and holds Support / Hover. What Elementor never
+ * emits for this widget is a transition of any kind, so that colour lands in
+ * a single frame and the row snaps under the cursor.
+ *
+ * Only the timing is added here, at the widget's own specificity, so the
+ * editor keeps full control over the colour itself.
+ *
+ * The wrapper class is `n-accordion`, not `nested-accordion` — the widget
+ * overrides it in `get_css_wrapper_selector()`.
+ */
+.elementor-widget-n-accordion .e-n-accordion-item-title {
+	transition: background-color $hover-duration $hover-ease;
+}
+
+/**
+ * Nested Tabs titles are real <button> elements, so Site Settings > Buttons
+ * paints the Default button onto them: white fill, 1px stroke, 8px radius
+ * and the button shadow, and again on :hover and :focus.
+ *
+ * These resets sit at (0,2,0) at rest and (0,3,0) on hover and focus: above
+ * the kit, below the tab style controls. The underline and the text colour
+ * stay on the widget. Hover is a border, not the textual-button surface.
+ */
+.elementor-widget-n-tabs .e-n-tab-title {
+	background-color: transparent;
+	border-radius: 0;
+	box-shadow: none;
+
+	&:hover,
+	&:focus {
+		background-color: transparent;
+		border-radius: 0;
+		box-shadow: none;
+	}
+
+	&:focus-visible {
+		@include focus-ring;
+		outline: 0;
+	}
+}
+
+/**
+ * Carousel arrows answer hover and press exactly like the Default button:
+ * Site Settings > Buttons > Hover background, then the Support / Pressed
+ * overlay landing in the same frame as the click. Elementor hardcodes the
+ * arrows to 250ms and has no press state, so every carousel on the site gets
+ * the shared timing here.
+ *
+ * Only hover and press are overridden. The resting state — background,
+ * border, radius, shadow, icon colour — stays with each widget's Navigation
+ * controls.
+ *
+ * Deliberately outranks the widget's own hover rule, (0,5,0), so the arrows
+ * cannot drift from the buttons per carousel.
+ */
+.elementor-element.elementor-widget[class*="elementor-widget-"] {
+	:is(.elementor-swiper-button-prev, .elementor-swiper-button-next).elementor-swiper-button {
+		transition-duration: $hover-duration;
+		transition-timing-function: $hover-ease;
+
+		&:hover {
+			background-color: var(--e-global-color-c000013, #f5f5f5);
+		}
+
+		&:active {
+			@include overlay($overlay-pressed);
+			transition-duration: $press-duration;
+		}
+	}
+}
+
+/**
+ * Video play and pause.
+ *
+ * The content block uses an Icon widget, which has no button hover of its own.
+ * These two controls take the Default button's hover and press: Site Settings
+ * hover background, then the Support / Pressed overlay in the same frame as
+ * the click. The hero's controls are Button widgets and already follow Site
+ * Settings, so they are not restyled here.
+ *
+ * While the video plays, the pause control leaves with the pointer and comes
+ * back on the video. The play control stays put — it is the resting state.
+ * The script removes the pause control from the document while paused, so
+ * this only applies once playback has started. A keyboard focus stays
+ * visible; the focus left behind by the click that started playback does
+ * not, or the button would sit there until the next click elsewhere.
+ */
+.elementor-element.elementor-widget.elementor-widget-icon {
+	&.endeavour-video-play,
+	&.endeavour-video-pause {
+		.elementor-icon {
+			// Framed view paints the border with the icon colour, and the
+			// widget has no separate border control. The Default button stroke
+			// is Grey 3, so the circle takes that token instead.
+			border-color: $color-line;
+			cursor: pointer;
+			transition-duration: $hover-duration;
+			transition-timing-function: $hover-ease;
+
+			&:hover {
+				background-color: var(--e-global-color-c000013, #f5f5f5);
+			}
+
+			&:active {
+				@include overlay($overlay-pressed);
+				transition-duration: $press-duration;
+			}
+
+			&:focus-visible {
+				@include focus-ring;
+				outline: 0;
+			}
+		}
+	}
+}
+
+.endeavour-video-pause {
+	transition: opacity $hover-duration $hover-ease;
+}
+
+// The button row is the video widget's next sibling and covers it. Hovering a
+// button counts as hovering that row; the rest of the row lets the pointer
+// through, so the video widget itself is what answers there.
+.endeavour-video-player .elementor-widget-video:not(:hover) + .e-con:not(:hover):not(:has(:focus-visible)) .endeavour-video-pause,
+.e-con:has(> .elementor-background-video-container):not(:hover):not(:has(:focus-visible)) .endeavour-video-pause {
+	opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.endeavour-video-pause {
+		transition: none;
+	}
+}
+
+@media (forced-colors: active) {
+	.elementor-widget-n-tabs .e-n-tab-title:focus-visible,
+	.elementor-widget-icon a.elementor-icon:focus-visible::before,
+	.elementor-widget-icon-list .elementor-icon-list-item > a:focus-visible::before,
+	.elementor-widget-post-info .elementor-icon-list-item > a:focus-visible::before,
+	.elementor-element.elementor-widget.elementor-widget-icon.endeavour-video-play .elementor-icon:focus-visible,
+	.elementor-element.elementor-widget.elementor-widget-icon.endeavour-video-pause .elementor-icon:focus-visible {
+		box-shadow: none;
+		outline: 2px solid CanvasText;
+		outline-offset: 2px;
+	}
+}

@@ -1,0 +1,78 @@
+@charset "UTF-8";
+/**
+ * Endeavour Overview Link
+ *
+ * Elementor controls own typography, colours, backgrounds, border, radius,
+ * shadow, spacing and icon size. This file only provides widget structure and
+ * the keyboard-focus state Elementor does not expose.
+ *
+ * Source of truth for `assets/css/elementor-overview-link.css`.
+ */
+/**
+ * Endeavour shared design tokens
+ *
+ * Every colour resolves to an Elementor Global Color, so Site Settings stays
+ * the single source of truth. The literal after the comma is only a fallback
+ * for the moment before the kit stylesheet has loaded — never edit it to
+ * change a colour, change the global in Site Settings instead.
+ */
+/**
+ * How a hover settles.
+ *
+ * Deliberately shorter than the 0.3s Elementor uses for `.elementor-button`
+ * and its nav menu pointer. A pointer crosses several targets a second, and at
+ * 0.3s the surface is still catching up when the cursor has already moved on.
+ * Ease-out spends that budget up front, so the change has effectively happened
+ * by the time the eye lands on it.
+ */
+/**
+ * How a press lands: not animated at all.
+ *
+ * Pressed feedback answers an action the visitor just took, so it belongs in
+ * the same frame as the click — anything else reads as the interface lagging
+ * behind the finger. Only the release eases back, over the hover duration.
+ */
+/**
+ * How something travels.
+ *
+ * Movement needs time to be followed, which is a different job from a colour
+ * settling under a cursor, so this is not the hover duration. Reserved for
+ * things that actually move — the off-canvas levels, the read-more chevron.
+ */
+.elementor-widget-endeavour-overview-link {
+  width: fit-content;
+}
+.elementor-widget-endeavour-overview-link .endeavour-overview-link {
+  align-items: center;
+  display: inline-flex;
+  transition: background-color 100ms ease-out, color 100ms ease-out, box-shadow 100ms ease-out;
+  width: fit-content;
+}
+.elementor-widget-endeavour-overview-link .endeavour-overview-link:active {
+  transition-duration: 0s;
+}
+.elementor-widget-endeavour-overview-link .endeavour-overview-link:focus-visible {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+}
+.elementor-widget-endeavour-overview-link .endeavour-overview-link__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+.elementor-widget-endeavour-overview-link .endeavour-overview-link__icon i {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  line-height: 1;
+}
+.elementor-widget-endeavour-overview-link .endeavour-overview-link__icon svg {
+  display: block;
+}
+
+@media (forced-colors: active) {
+  .elementor-widget-endeavour-overview-link .endeavour-overview-link:focus-visible {
+    box-shadow: none;
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+}

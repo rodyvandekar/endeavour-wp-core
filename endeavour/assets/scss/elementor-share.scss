@@ -1,0 +1,106 @@
+/**
+ * Endeavour Share widget
+ *
+ * The button chrome — fill, border, radius, type, shadow and the Other
+ * button's padding — belongs to Site Settings > Buttons, through the shared
+ * `.elementor-button` class. This file only adds what that kit rule cannot:
+ * the row, the icon-only square, and states Elementor does not paint.
+ *
+ * Source of truth for `assets/css/elementor-share.css`.
+ * Compile: npx --yes sass assets/scss/elementor-share.scss assets/css/elementor-share.css
+ */
+
+@use "tokens" as *;
+
+.elementor-element.elementor-widget-endeavour-share {
+	.endeavour-share {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--endv-share-title-gap, 32px);
+		max-width: 100%;
+	}
+
+	.endeavour-share__title {
+		margin: 0;
+		max-width: var(--endv-share-title-max, 770px);
+	}
+
+	.endeavour-share__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--endv-share-gap, 16px);
+		max-width: 100%;
+	}
+
+	// The extra networks have to join the same row, so the wrapper itself
+	// takes no box. The hidden attribute keeps them out until Other is pressed.
+	.endeavour-share__more:not([hidden]) {
+		display: contents;
+	}
+
+	.endeavour-share__button,
+	.endeavour-share__toggle {
+		box-sizing: border-box;
+		margin: 0;
+		text-decoration: none;
+		cursor: pointer;
+		transition-duration: $hover-duration;
+		transition-timing-function: $hover-ease;
+	}
+
+	// Icon-only has no Elementor control. The labelled Other button keeps the
+	// kit padding, so this selector must not match it.
+	.endeavour-share__button--icon {
+		align-items: center;
+		block-size: var(--endv-share-button-size, 40px);
+		display: inline-flex;
+		inline-size: var(--endv-share-button-size, 40px);
+		justify-content: center;
+		padding: 0;
+	}
+
+	.endeavour-share__icon {
+		display: inline-flex;
+		font-size: var(--endv-share-icon-size, 20px);
+		line-height: 1;
+	}
+
+	.endeavour-share__toggle {
+		align-items: center;
+		display: inline-flex;
+		gap: 8px;
+	}
+
+	.endeavour-share__toggle-icon {
+		display: inline-flex;
+
+		&[hidden] {
+			display: none;
+		}
+	}
+
+	.endeavour-share__button:active,
+	.endeavour-share__toggle:active {
+		@include overlay($overlay-pressed);
+		transition-duration: $press-duration;
+	}
+
+	.endeavour-share__button:focus-visible,
+	.endeavour-share__toggle:focus-visible {
+		@include focus-ring;
+		outline: 0;
+	}
+}
+
+@media (forced-colors: active) {
+	.elementor-element.elementor-widget-endeavour-share {
+		.endeavour-share__button:focus-visible,
+		.endeavour-share__toggle:focus-visible {
+			box-shadow: none;
+			outline: 2px solid CanvasText;
+			outline-offset: 2px;
+		}
+	}
+}

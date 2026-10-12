@@ -1,0 +1,109 @@
+@charset "UTF-8";
+/**
+ * Read more behaviour for Elementor Text Editor widgets.
+ *
+ * The line count is an Elementor control exposed through
+ * `--endv-read-more-lines`. Button paint follows global design tokens; no text
+ * widget typography or colour control is duplicated here.
+ *
+ * Source of truth for `assets/css/elementor-text-read-more.css`.
+ */
+/**
+ * Endeavour shared design tokens
+ *
+ * Every colour resolves to an Elementor Global Color, so Site Settings stays
+ * the single source of truth. The literal after the comma is only a fallback
+ * for the moment before the kit stylesheet has loaded — never edit it to
+ * change a colour, change the global in Site Settings instead.
+ */
+/**
+ * How a hover settles.
+ *
+ * Deliberately shorter than the 0.3s Elementor uses for `.elementor-button`
+ * and its nav menu pointer. A pointer crosses several targets a second, and at
+ * 0.3s the surface is still catching up when the cursor has already moved on.
+ * Ease-out spends that budget up front, so the change has effectively happened
+ * by the time the eye lands on it.
+ */
+/**
+ * How a press lands: not animated at all.
+ *
+ * Pressed feedback answers an action the visitor just took, so it belongs in
+ * the same frame as the click — anything else reads as the interface lagging
+ * behind the finger. Only the release eases back, over the hover duration.
+ */
+/**
+ * How something travels.
+ *
+ * Movement needs time to be followed, which is a different job from a colour
+ * settling under a cursor, so this is not the hover duration. Reserved for
+ * things that actually move — the off-canvas levels, the read-more chevron.
+ */
+.endeavour-read-more__teaser[hidden],
+.endeavour-read-more__content[hidden],
+.endeavour-read-more__toggle[hidden] {
+  display: none !important;
+}
+
+.elementor-element.elementor-widget-text-editor .endeavour-read-more__teaser {
+  max-block-size: calc(var(--endv-read-more-lines, 3) * 1lh);
+  overflow: hidden;
+}
+
+.elementor-element.elementor-widget-text-editor .endeavour-read-more__toggle {
+  align-items: center;
+  background-color: transparent;
+  border: 0;
+  border-radius: 8px;
+  box-shadow: none;
+  color: var(--e-global-color-secondary, #1f2533);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--e-global-typography-secondary-font-family, Inter), sans-serif;
+  font-size: var(--e-global-typography-secondary-font-size, 16px);
+  font-weight: var(--e-global-typography-secondary-font-weight, 600);
+  gap: 8px;
+  letter-spacing: var(--e-global-typography-secondary-letter-spacing, 0);
+  line-height: var(--e-global-typography-secondary-line-height, 24px);
+  margin-block-start: 8px;
+  margin-inline-start: -8px;
+  padding: 4px 8px;
+  text-decoration: var(--e-global-typography-secondary-text-decoration, none);
+  transition: background-color 100ms ease-out, box-shadow 100ms ease-out, color 100ms ease-out;
+  word-spacing: var(--e-global-typography-secondary-word-spacing, normal);
+}
+.elementor-element.elementor-widget-text-editor .endeavour-read-more__toggle:hover {
+  background-image: linear-gradient(var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863)), var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863)));
+  color: var(--e-global-color-secondary, #1f2533);
+}
+.elementor-element.elementor-widget-text-editor .endeavour-read-more__toggle:active {
+  background-image: linear-gradient(var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725)), var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725)));
+  transition-duration: 0s;
+}
+.elementor-element.elementor-widget-text-editor .endeavour-read-more__toggle:focus-visible {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+}
+.elementor-element.elementor-widget-text-editor .endeavour-read-more__toggle .endeavour-read-more__icon {
+  block-size: 20px;
+  flex: 0 0 auto;
+  inline-size: 20px;
+  transition: transform 0.3s;
+}
+.elementor-element.elementor-widget-text-editor .endeavour-read-more__toggle[aria-expanded=true] .endeavour-read-more__icon {
+  transform: rotate(180deg);
+}
+
+@media (forced-colors: active) {
+  .elementor-element.elementor-widget-text-editor .endeavour-read-more__toggle:focus-visible {
+    box-shadow: none;
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .elementor-element.elementor-widget-text-editor .endeavour-read-more__toggle,
+  .elementor-element.elementor-widget-text-editor .endeavour-read-more__icon {
+    transition-duration: 0s;
+  }
+}

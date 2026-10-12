@@ -1,0 +1,244 @@
+@charset "UTF-8";
+/**
+ * Endeavour menu-item interaction states
+ *
+ * Elementor remains the source of truth for every Nav Menu control it exposes:
+ * typography, text colours, item padding, spacing, pointer background, radius,
+ * hover and current-page styling. Configure those in the widget.
+ *
+ * This file only supplies states and structure Elementor does not expose:
+ * - `:active`        — the short pressed state while mouse/touch is held
+ * - `:focus-visible` — the shared Endeavour keyboard-focus indicator
+ * - the width of a vertical item, which has no control at all
+ *
+ * The guiding rule is that a state must reuse the surface its own hover already
+ * paints, never draw a second one next to it. A menu item hovers through
+ * Elementor's pointer pseudo-element, so press and focus go there too; a
+ * dropdown row hovers through the link's own background, so they stay on the
+ * link. Anything else duplicates a radius the editor owns and the states drift
+ * apart the moment someone changes it.
+ *
+ * Source of truth for `assets/css/elementor-menu-items.css`.
+ * Compile: npx --yes sass assets/scss/elementor-menu-items.scss assets/css/elementor-menu-items.css
+ */
+/**
+ * Endeavour shared design tokens
+ *
+ * Every colour resolves to an Elementor Global Color, so Site Settings stays
+ * the single source of truth. The literal after the comma is only a fallback
+ * for the moment before the kit stylesheet has loaded — never edit it to
+ * change a colour, change the global in Site Settings instead.
+ */
+/**
+ * How a hover settles.
+ *
+ * Deliberately shorter than the 0.3s Elementor uses for `.elementor-button`
+ * and its nav menu pointer. A pointer crosses several targets a second, and at
+ * 0.3s the surface is still catching up when the cursor has already moved on.
+ * Ease-out spends that budget up front, so the change has effectively happened
+ * by the time the eye lands on it.
+ */
+/**
+ * How a press lands: not animated at all.
+ *
+ * Pressed feedback answers an action the visitor just took, so it belongs in
+ * the same frame as the click — anything else reads as the interface lagging
+ * behind the finger. Only the release eases back, over the hover duration.
+ */
+/**
+ * How something travels.
+ *
+ * Movement needs time to be followed, which is a different job from a colour
+ * settling under a cursor, so this is not the hover duration. Reserved for
+ * things that actually move — the off-canvas levels, the read-more chevron.
+ */
+.elementor-element.elementor-widget.elementor-widget-nav-menu {
+  /**
+   * Vertical menu items hug their label.
+   *
+   * Figma's Menu Item is a shrink-to-fit row, so the hover surface is the
+   * label plus the widget's Horizontal Padding — not the column it sits in.
+   * Elementor lays a vertical menu out as block-level links, which stretch to
+   * the widget width, and exposes no control for that width, so nothing in
+   * the editor is frozen by this. Horizontal menus already hug and are left
+   * alone.
+   *
+   * `fit-content` keeps the link a block box, so the widget's Align control
+   * still positions it and Horizontal Padding still sizes it.
+   */
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--main.elementor-nav-menu--layout-vertical .elementor-item {
+  width: fit-content;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu {
+  /**
+   * The label's own colour change.
+   *
+   * Elementor Pro fades it over `.4s` from
+   * `.elementor-nav-menu--main .elementor-nav-menu a`, and offers no control
+   * to shorten it. The pointer behind the label is already on the design
+   * system's timing, so without this the two halves of one hover arrive four
+   * tenths of a second apart.
+   */
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--main .elementor-nav-menu a {
+  transition-duration: 100ms;
+  transition-timing-function: ease-out;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--main .elementor-nav-menu a:active {
+  transition-duration: 0s;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu {
+  /**
+   * Horizontal menu items.
+   *
+   * With Pointer: Background, Elementor renders the hover surface as
+   * `.elementor-item::before` — absolutely positioned over the link, carrying
+   * the widget's Border Radius and its 0.3s fade, revealed by flipping
+   * opacity. Press and focus ride along on that element, so all three states
+   * share one box and one radius, and Site Settings keeps owning both.
+   *
+   * Specificity is deliberate. Elementor colours the pointer at (0,6,0) via
+   * `{{WRAPPER}} .elementor-nav-menu--main:not(.e--pointer-framed)
+   * .elementor-item::before`, and hides it at (0,5,0) with a chain of
+   * `:not()`s. Adding the state pseudo-class here reaches (0,7,0), which wins
+   * in every load order rather than tying and resolving differently in the
+   * editor preview.
+   *
+   * `:not(.e--pointer-framed)` mirrors Elementor's own guard: the Framed
+   * pointer carries its colour on `border-color`, so repainting a background
+   * there would be meaningless.
+   */
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--main:not(.e--pointer-framed) .elementor-item::before {
+  transition-duration: 100ms;
+  transition-timing-function: ease-out;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--main:not(.e--pointer-framed) .elementor-item:active::before {
+  background-color: var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725));
+  opacity: 1;
+  transition-duration: 0s;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--main:not(.e--pointer-framed) .elementor-item:focus-visible {
+  outline: 0;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--main:not(.e--pointer-framed) .elementor-item:focus-visible::before {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  opacity: 1;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu {
+  /**
+   * Dropdown and submenu links.
+   *
+   * The row stays the widget's: panel padding, item padding and the 40px
+   * pitch come from the Nav Menu controls plus the 4px on the `li` below.
+   * The surface on that row is the textual button's. Elementor stretches
+   * every dropdown link to the panel and has no width control, so without
+   * this the hover is a bar. `fit-content` lets Horizontal Padding hug the
+   * label the way the Link button's 8px does.
+   *
+   * Hover colour stays the widget's Dropdown > Hover background. What
+   * Elementor does not offer is the press, and it also paints that same
+   * hover background on `:focus`, so a click leaves the surface behind
+   * after the pointer has gone. The Link button does neither: the press
+   * replaces the hover in the frame of the click, and a click that is not
+   * a hover leaves only the focus ring.
+   */
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown > li {
+  padding-block: 4px;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown a.elementor-item,
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown a.elementor-sub-item {
+  width: fit-content;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown a.elementor-item:active,
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown a.elementor-sub-item:active {
+  background-color: var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725));
+  background-image: none;
+  transition-duration: 0s;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown a.elementor-item:focus:not(:hover):not(.elementor-item-active):not(.highlighted),
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown a.elementor-sub-item:focus:not(:hover):not(.elementor-item-active):not(.highlighted) {
+  background-color: transparent;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown a.elementor-item:focus-visible,
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown a.elementor-sub-item:focus-visible {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+  position: relative;
+  z-index: 1;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu {
+  /**
+   * Optional row dividers from Appearance > Menus.
+   *
+   * Figma's submenu (5430:24456) does not draw the line on the link or flush
+   * with the row. The divider is its own 40px slot, the same height as a menu
+   * item, with the 1px line centred in it: 20px above the line and 19px below.
+   * The slot is margin, so the line stays on the list item and the link keeps
+   * its own hover padding.
+   */
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown li.endeavour-menu-border-top,
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown li.endeavour-menu-border-bottom {
+  position: relative;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown li.endeavour-menu-border-top {
+  margin-top: 40px;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown li.endeavour-menu-border-top::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background-color: var(--e-global-color-accent, #d3d7e0);
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown li.endeavour-menu-border-bottom {
+  margin-bottom: 40px;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown li.endeavour-menu-border-bottom::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -21px;
+  left: 0;
+  height: 1px;
+  background-color: var(--e-global-color-accent, #d3d7e0);
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu {
+  /**
+   * The mobile toggle is a menu control and follows the same pressed and
+   * keyboard states. Its normal and hover colours stay in Elementor's Toggle
+   * controls.
+   *
+   * Elementor hard-codes `padding: .25em` on the toggle and exposes no control
+   * for it, which lands the surface at 30px around a 20px glyph instead of the
+   * 32px square every other icon-only target uses. Rebuilding it from the
+   * shared token keeps the toggle in step with the Icon widget, including when
+   * Toggle Size changes.
+   */
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-menu-toggle {
+  padding: 6px;
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-menu-toggle:active {
+  background-image: linear-gradient(var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725)), var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725)));
+}
+.elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-menu-toggle:focus-visible {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  outline: 0;
+}
+
+@media (forced-colors: active) {
+  .elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--main:not(.e--pointer-framed) .elementor-item:focus-visible::before,
+  .elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-nav-menu--dropdown .elementor-item:focus-visible,
+  .elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-sub-item:focus-visible,
+  .elementor-element.elementor-widget.elementor-widget-nav-menu .elementor-menu-toggle:focus-visible {
+    box-shadow: none;
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+}

@@ -1,0 +1,95 @@
+/**
+ * Read more behaviour for Elementor Text Editor widgets.
+ *
+ * The line count is an Elementor control exposed through
+ * `--endv-read-more-lines`. Button paint follows global design tokens; no text
+ * widget typography or colour control is duplicated here.
+ *
+ * Source of truth for `assets/css/elementor-text-read-more.css`.
+ */
+
+@use "tokens" as *;
+
+.endeavour-read-more__teaser[hidden],
+.endeavour-read-more__content[hidden],
+.endeavour-read-more__toggle[hidden] {
+	display: none !important;
+}
+
+.elementor-element.elementor-widget-text-editor .endeavour-read-more__teaser {
+	// `lh` is the block's own line-height, so the collapsed height follows the
+	// widget's Typography control instead of a number repeated here. The
+	// overflow only clips the last paragraph's bottom margin; the script trims
+	// the text itself to the same number of lines.
+	max-block-size: calc(var(--endv-read-more-lines, 3) * 1lh);
+	overflow: hidden;
+}
+
+.elementor-element.elementor-widget-text-editor .endeavour-read-more__toggle {
+	align-items: center;
+	background-color: transparent;
+	border: 0;
+	border-radius: $hover-radius;
+	box-shadow: none;
+	color: $color-ink;
+	cursor: pointer;
+	display: inline-flex;
+	font-family: var(--e-global-typography-secondary-font-family, Inter), sans-serif;
+	font-size: var(--e-global-typography-secondary-font-size, 16px);
+	font-weight: var(--e-global-typography-secondary-font-weight, 600);
+	gap: 8px;
+	letter-spacing: var(--e-global-typography-secondary-letter-spacing, 0);
+	line-height: var(--e-global-typography-secondary-line-height, 24px);
+	margin-block-start: 8px;
+	margin-inline-start: -8px;
+	padding: 4px 8px;
+	text-decoration: var(--e-global-typography-secondary-text-decoration, none);
+	transition:
+		background-color $hover-duration $hover-ease,
+		box-shadow $hover-duration $hover-ease,
+		color $hover-duration $hover-ease;
+	word-spacing: var(--e-global-typography-secondary-word-spacing, normal);
+
+	&:hover {
+		@include overlay($overlay-hover);
+		color: $color-ink;
+	}
+
+	&:active {
+		@include overlay($overlay-pressed);
+		transition-duration: $press-duration;
+	}
+
+	&:focus-visible {
+		@include focus-ring;
+		outline: 0;
+	}
+
+	.endeavour-read-more__icon {
+		block-size: 20px;
+		flex: 0 0 auto;
+		inline-size: 20px;
+		// Movement, not a hover: the chevron turns when the text expands.
+		transition: transform $motion-duration;
+	}
+
+	&[aria-expanded="true"] .endeavour-read-more__icon {
+		transform: rotate(180deg);
+	}
+}
+
+@media (forced-colors: active) {
+	.elementor-element.elementor-widget-text-editor
+		.endeavour-read-more__toggle:focus-visible {
+		box-shadow: none;
+		outline: 2px solid CanvasText;
+		outline-offset: 2px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.elementor-element.elementor-widget-text-editor .endeavour-read-more__toggle,
+	.elementor-element.elementor-widget-text-editor .endeavour-read-more__icon {
+		transition-duration: 0s;
+	}
+}

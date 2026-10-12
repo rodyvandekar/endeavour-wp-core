@@ -1,0 +1,295 @@
+/**
+ * Endeavour Elementor Button types
+ *
+ * Geometry and colour live in Elementor, not here. Site Settings > Buttons owns
+ * padding, border, radius, typography, box-shadow and the Default button's
+ * normal and hover colours; the widget's Icon Spacing control owns the gap
+ * between icon and label. Editing any of those must keep working, so this file
+ * never re-declares them — a child-theme selector outranks the kit and would
+ * silently freeze the value.
+ *
+ * What remains is what Elementor has no control for:
+ * - the Prominent and Link variants, since a kit holds one global button style
+ * - :active, :focus-visible, disabled and forced-colors
+ * - the 20px icon box, which the core widget ties to the label's font size
+ * - icon-only geometry, derived from the kit's padding instead of pinned
+ * - hover typography, which the kit's global Link style otherwise hijacks
+ *
+ * Specificity is the load-bearing detail here, so the file is split in two.
+ *
+ * Elementor writes a per-widget override as
+ * `.elementor-{post} .elementor-element.elementor-element-{id} .elementor-button`
+ * — four classes, (0,4,0) — and its hover twin at (0,5,0). It ships that in
+ * `post-{id}.css`, which is enqueued *before* this stylesheet, so anything here
+ * that also lands on (0,4,0) wins the tie on source order and quietly freezes
+ * the control.
+ *
+ * Variant paint (§ Variants) therefore stays at (0,3,0) for the normal state
+ * and (0,4,0) on hover: above the kit, below the widget. Picking a Colour or
+ * Background on a Prominent or Link button works like it does on any other.
+ *
+ * Structure and state (§ Structure) deliberately sit at (0,4,0) and up. A
+ * disabled button must read as disabled and a focus ring must stay visible
+ * whatever the editor picked, and icon-only geometry answers no control at all.
+ *
+ * Source of truth for `assets/css/elementor-button-types.css`.
+ * Compile: npx --yes sass assets/scss/elementor-button-types.scss assets/css/elementor-button-types.css
+ *
+ * Figma
+ * - Default:   2001:8993
+ * - Prominent: 2001:9016
+ * - Link:      2001:9039
+ */
+
+@use "tokens" as *;
+
+// ---------------------------------------------------------------------------
+// Tokens
+// ---------------------------------------------------------------------------
+
+$icon-size: 20px;
+
+// Elementor has no icon-only mode, so the square has to be stated. A definite
+// block size is also what lets `aspect-ratio` resolve the width, since a
+// shrink-to-fit inline-block leaves both axes auto.
+$icon-button-size: 40px;
+$icon-button-size-link: 32px;
+
+// Link is the one variant with no Elementor counterpart, so it carries its own
+// box model. The bleed matches the inline padding so the hover overlay grows
+// outward without shifting surrounding text.
+$link-padding: 4px 8px;
+$link-bleed: 8px;
+
+// Site Settings > Buttons binds its typography to the Button global font, which
+// Elementor emits under the `secondary` slot. Keep these in step with that
+// binding; they exist only to repair the hover state (see below).
+$button-font-family: var(--e-global-typography-secondary-font-family, "Inter"), sans-serif;
+$button-font-size: var(--e-global-typography-secondary-font-size, 16px);
+$button-font-weight: var(--e-global-typography-secondary-font-weight, 600);
+$button-letter-spacing: var(--e-global-typography-secondary-letter-spacing, 0);
+$button-line-height: var(--e-global-typography-secondary-line-height, 24px);
+$button-text-decoration: var(--e-global-typography-secondary-text-decoration, none);
+$button-word-spacing: var(--e-global-typography-secondary-word-spacing, normal);
+
+$shadow-prominent: 0 1px 2px rgba(0, 0, 0, 0.16);
+
+// Both markers are written together by the Disabled switch in
+// inc/elementor-button-types.php, so matching both is safe — and the compound
+// buys the two extra points that keep the disabled look above a per-widget
+// hover override, which Elementor emits at (0,5,0).
+$disabled-selector: "[aria-disabled='true'].is-disabled";
+
+// Elementor omits the label span entirely when the Text field is empty, so
+// icon-only is the absence of that element rather than an empty one.
+$icon-only-selector: ":not(:has(.elementor-button-text))";
+
+// ---------------------------------------------------------------------------
+// Mixins
+// ---------------------------------------------------------------------------
+
+@mixin disabled-base {
+	background-image: none;
+	box-shadow: none;
+	cursor: not-allowed;
+	@include ink($color-muted);
+}
+
+// Also matches widgets still holding one of Elementor's removed Type values.
+@mixin default-type {
+	&.elementor-button-endeavour-default,
+	&:not(.elementor-button-endeavour-prominent):not(.elementor-button-endeavour-link) {
+		@content;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Hover typography — repairs what the kit's global Link style breaks
+// ---------------------------------------------------------------------------
+
+// The kit styles every <a> with the global Link font, and `.elementor-kit-N
+// a:hover` (0,2,1) outranks the kit's own button rule (0,2,0). Site Settings >
+// Buttons has no hover typography to answer with, so on hover a button adopts
+// the Link style: it grows by the difference in line-height, drops to the link
+// weight and picks up its underline. Restating the Button font repairs that.
+//
+// Specificity is deliberately (0,3,0) — above `a:hover`, but below the (0,4,0)
+// Elementor emits for a per-widget Typography override, so a button styled in
+// the editor keeps that style on hover too.
+.elementor-widget-button .elementor-button {
+	&:hover,
+	&:focus {
+		font-family: $button-font-family;
+		font-size: $button-font-size;
+		font-weight: $button-font-weight;
+		letter-spacing: $button-letter-spacing;
+		line-height: $button-line-height;
+		text-decoration: $button-text-decoration;
+		word-spacing: $button-word-spacing;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Interaction timing — the half of it Elementor has no control for
+// ---------------------------------------------------------------------------
+
+// Transition Duration is a real control, so the 100ms is set as its default in
+// inc/elementor-button-types.php and stays editable per button. The curve is
+// not: Elementor's own `transition: all .3s` leaves it on the browser default
+// and offers nothing to change it with.
+//
+// (0,3,0) — above Elementor's (0,1,0) base rule, below the (0,4,0) it emits
+// for the duration, so each half of the shorthand keeps its owner.
+.elementor-widget-button .elementor-button {
+	transition-timing-function: $hover-ease;
+}
+
+// ---------------------------------------------------------------------------
+// Variants — (0,3,0) normal, (0,4,0) hover, so the widget always outranks this
+// ---------------------------------------------------------------------------
+
+.elementor-widget-button {
+	// Default — Figma 2001:8993.
+	// Site Settings covers the normal and hover state in full, so only the
+	// pressed feedback is left. As a background-image it layers over whatever
+	// background-color the kit or the editor supplies.
+	@include default-type {
+		.elementor-button:active {
+			@include overlay($overlay-pressed);
+		}
+	}
+
+	// Prominent — Figma 2001:9016.
+	// A transparent border instead of none, so the kit's border width and
+	// padding keep adding up to the same 40px box.
+	&.elementor-button-endeavour-prominent .elementor-button {
+		background-color: $color-brand;
+		border-color: transparent;
+		box-shadow: $shadow-prominent;
+		@include ink($color-white);
+
+		&:hover {
+			@include overlay($overlay-hover-prominent);
+		}
+
+		&:active {
+			@include overlay($overlay-pressed-prominent);
+		}
+	}
+
+	// Link — Figma 2001:9039. The one variant with no Elementor counterpart,
+	// so it carries its own box model as a default the editor can still replace.
+	&.elementor-button-endeavour-link .elementor-button {
+		background-color: transparent;
+		border-width: 0;
+		box-shadow: none;
+		margin-inline: -$link-bleed;
+		padding: $link-padding;
+		@include ink($color-brand);
+
+		&:hover {
+			@include overlay($overlay-hover);
+		}
+
+		&:active {
+			@include overlay($overlay-pressed);
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Structure and state — (0,5,0) and up, intentionally beyond the widget
+// ---------------------------------------------------------------------------
+
+// Elementor prints per-widget CSS as a file on the front end but inlines it in
+// the editor preview and under the Internal Embedding print method, which flips
+// the source order. Three wrapper classes put this block a full point above the
+// widget either way, so these rules never depend on which copy loads last.
+.elementor-element.elementor-widget.elementor-widget-button {
+	.elementor-button-content-wrapper {
+		align-items: center;
+	}
+
+	// The core widget scales the icon with the label; Figma keeps it at 20px.
+	.elementor-button-icon {
+		display: inline-flex;
+		font-size: $icon-size;
+		height: $icon-size;
+		width: $icon-size;
+
+		i,
+		svg {
+			height: $icon-size;
+			width: $icon-size;
+		}
+	}
+
+	// Icon-only geometry. Elementor has no icon-only mode, so nothing here
+	// contradicts a control — the square simply has to be stated.
+	.elementor-button#{$icon-only-selector} {
+		aspect-ratio: 1;
+		block-size: $icon-button-size;
+		padding: 0;
+
+		.elementor-button-content-wrapper {
+			block-size: 100%;
+			justify-content: center;
+		}
+	}
+
+	// Shorter square, and no inline padding left to bleed into.
+	&.elementor-button-endeavour-link .elementor-button#{$icon-only-selector} {
+		block-size: $icon-button-size-link;
+		margin-inline: 0;
+	}
+
+	// The pressed surface answers a click, so it lands in the same frame as
+	// the click; only the release eases back over the hover duration. This
+	// deliberately outranks the widget's Transition Duration, which has no
+	// say over a state Elementor does not paint.
+	.elementor-button:active {
+		transition-duration: $press-duration;
+	}
+
+	// A button with no Link is an anchor without an href, which the browser
+	// treats as text: no pointer cursor, so the button reads as dead even
+	// though its hover paints. Elementor has no cursor control to contradict.
+	// The matching tab stop is script, since markup cannot supply it.
+	.elementor-button:not([href]) {
+		cursor: pointer;
+	}
+
+	// Disabled outranks the editor on purpose: a button that cannot be used
+	// must not look usable, whatever Colour the widget carries.
+	.elementor-button#{$disabled-selector} {
+		background-color: $color-alt;
+		border-color: transparent;
+		@include disabled-base;
+	}
+
+	&.elementor-button-endeavour-prominent .elementor-button#{$disabled-selector} {
+		background-color: $color-line;
+	}
+
+	&.elementor-button-endeavour-link .elementor-button#{$disabled-selector} {
+		background-color: transparent;
+	}
+
+	// Last, so the ring outranks every variant's own box-shadow.
+	.elementor-button:focus-visible,
+	.elementor-button#{$disabled-selector}:focus-visible {
+		@include focus-ring;
+		outline: 0;
+	}
+}
+
+@media (forced-colors: active) {
+	.elementor-element.elementor-widget.elementor-widget-button {
+		.elementor-button:focus-visible,
+		.elementor-button#{$disabled-selector}:focus-visible {
+			box-shadow: none;
+			outline: 2px solid CanvasText;
+			outline-offset: 2px;
+		}
+	}
+}

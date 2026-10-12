@@ -1,0 +1,32 @@
+@charset "UTF-8";
+/**
+ * Whole-container link
+ *
+ * Turn it on in a Loop Item with Layout > Container > Create a link within
+ * this container. That switch adds `endeavour-container-link-yes` and prints
+ * `a.endeavour-container-link` as the container's first child
+ * (inc/elementor-container-link.php).
+ *
+ * The anchor covers the container; `.e-con` is already `position: relative`
+ * through Elementor's `--position`, so nothing is set on the container itself
+ * and its Position control stays in charge.
+ *
+ * Every real link and control inside is lifted one layer above the overlay,
+ * so a click on the title, category or a button goes to that element. They
+ * only get `position: relative` when they have none of their own — the lift
+ * is written through `:where()` so any positioning a widget sets still wins.
+ *
+ * Source of truth for `assets/css/elementor-container-link.css`.
+ * Compile: npx --yes sass assets/scss/elementor-container-link.scss assets/css/elementor-container-link.css
+ */
+.endeavour-container-link-yes > .endeavour-container-link,
+.endeavour-container-link-yes > .e-con-inner > .endeavour-container-link {
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+:where(.endeavour-container-link-yes) :where(a:not(.endeavour-container-link), button, input, select, textarea, label, [tabindex]:not([tabindex="-1"])) {
+  position: relative;
+  z-index: 2;
+}

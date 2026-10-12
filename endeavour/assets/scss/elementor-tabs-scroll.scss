@@ -1,0 +1,136 @@
+/**
+ * Slide controls for Nested Tabs that do not fit.
+ *
+ * Elementor can scroll the tab row, but it has no chevron for it. Figma
+ * 4400:21185 puts a 1px line and a 20px chevron at the end of the row, 16px
+ * apart, and only while tabs are out of view. The script builds that
+ * control; this file only draws it.
+ *
+ * The chevron is an Endeavour icon (`endv-chevron-right` / `endv-chevron-left`),
+ * coloured with the brand token. It is a clickable icon, so it takes the
+ * shared hover surface. The tab labels themselves do not.
+ *
+ * Source of truth for `assets/css/elementor-tabs-scroll.css`.
+ * Compile: npx --yes sass assets/scss/elementor-tabs-scroll.scss assets/css/elementor-tabs-scroll.css
+ */
+
+@use "tokens" as *;
+
+// The heading stays where Elementor put it, because every tab state the
+// widget prints is a child selector through `.e-n-tabs > .e-n-tabs-heading`.
+// The controls sit over its edges; the script sets their top and height from
+// the heading. The white ground hides the tab scrolling underneath, so the
+// heading never changes width while it scrolls.
+.elementor-widget-n-tabs .e-n-tabs.endeavour-tabs-scrollable {
+	position: relative;
+}
+
+.elementor-widget-n-tabs .endeavour-tabs-scroll {
+	align-items: center;
+	// Solid white, above the heading. A tab scrolling underneath must not
+	// show through the line or the chevron. The kit token is #fff.
+	background-color: $color-white;
+	display: flex;
+	gap: 16px;
+	position: absolute;
+	z-index: 3;
+
+	&--prev {
+		left: 0;
+	}
+
+	&--next {
+		right: 0;
+	}
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+// Only while the row actually overflows, so a short row keeps the normal cursor.
+.elementor-widget-n-tabs .e-n-tabs-heading.endeavour-tabs-draggable {
+	cursor: grab;
+	touch-action: pan-y;
+
+	&.is-dragging {
+		cursor: grabbing;
+		user-select: none;
+	}
+}
+
+.elementor-widget-n-tabs .endeavour-tabs-scroll__line {
+	align-self: stretch;
+	background-color: $color-line;
+	width: 1px;
+}
+
+// (0,3,0) at rest and (0,4,0) on hover, above the kit's `button` rule
+// (0,2,1), which would otherwise paint the Default button onto this control.
+.elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button {
+	appearance: none;
+	background-color: $color-white;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	color: $color-brand;
+	cursor: pointer;
+	font-size: 20px;
+	line-height: 1;
+	padding: 0;
+	position: relative;
+	transition-duration: $hover-duration;
+	transition-timing-function: $hover-ease;
+
+	&::before {
+		background-color: $overlay-hover;
+		border-radius: $hover-radius;
+		content: "";
+		inset: $hover-inset-icon;
+		opacity: 0;
+		pointer-events: none;
+		position: absolute;
+		transition:
+			background-color $hover-duration $hover-ease,
+			opacity $hover-duration $hover-ease;
+	}
+
+	> * {
+		position: relative;
+	}
+
+	&:hover,
+	&:focus {
+		background-color: $color-white;
+		border: 0;
+		box-shadow: none;
+		color: $color-brand;
+	}
+
+	&:hover::before {
+		opacity: 1;
+	}
+
+	&:active::before {
+		background-color: $overlay-pressed;
+		opacity: 1;
+		transition-duration: $press-duration;
+	}
+
+	&:focus-visible {
+		outline: 0;
+
+		&::before {
+			@include focus-ring;
+			opacity: 1;
+		}
+	}
+}
+
+@media (forced-colors: active) {
+	.elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button:focus-visible::before {
+		box-shadow: none;
+		outline: 2px solid CanvasText;
+		outline-offset: 2px;
+	}
+}

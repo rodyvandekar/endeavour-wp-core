@@ -1,0 +1,58 @@
+@charset "UTF-8";
+/**
+ * Card hover shadow for containers
+ *
+ * Turn it on per container with Layout > Container > Enable container hover
+ * styling. That switch adds `endeavour-container-hover-yes`. The shadow number
+ * lives in `_tokens.scss` (`$card-hover-shadow`); do not repeat it here.
+ *
+ * Elementor already transitions `box-shadow` on `.e-con` through
+ * `--border-transition` (default 0.3s). Setting that variable keeps the
+ * editor's own transition shorthand in charge and only shortens the duration
+ * to the shared hover timing. Specificity stays at (0,2,0) / (0,3,0) on
+ * hover, below a per-container box-shadow the editor writes, so that control
+ * still wins when someone sets one.
+ *
+ * Source of truth for `assets/css/elementor-container-hover.css`.
+ * Compile: npx --yes sass assets/scss/elementor-container-hover.scss assets/css/elementor-container-hover.css
+ *
+ * Figma: Card/Hover 2017:7741.
+ */
+/**
+ * Endeavour shared design tokens
+ *
+ * Every colour resolves to an Elementor Global Color, so Site Settings stays
+ * the single source of truth. The literal after the comma is only a fallback
+ * for the moment before the kit stylesheet has loaded — never edit it to
+ * change a colour, change the global in Site Settings instead.
+ */
+/**
+ * How a hover settles.
+ *
+ * Deliberately shorter than the 0.3s Elementor uses for `.elementor-button`
+ * and its nav menu pointer. A pointer crosses several targets a second, and at
+ * 0.3s the surface is still catching up when the cursor has already moved on.
+ * Ease-out spends that budget up front, so the change has effectively happened
+ * by the time the eye lands on it.
+ */
+/**
+ * How a press lands: not animated at all.
+ *
+ * Pressed feedback answers an action the visitor just took, so it belongs in
+ * the same frame as the click — anything else reads as the interface lagging
+ * behind the finger. Only the release eases back, over the hover duration.
+ */
+/**
+ * How something travels.
+ *
+ * Movement needs time to be followed, which is a different job from a colour
+ * settling under a cursor, so this is not the hover duration. Reserved for
+ * things that actually move — the off-canvas levels, the read-more chevron.
+ */
+.elementor-element.endeavour-container-hover-yes {
+  --border-transition: 100ms;
+  transition-timing-function: ease-out;
+}
+.elementor-element.endeavour-container-hover-yes:hover {
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.0784313725);
+}

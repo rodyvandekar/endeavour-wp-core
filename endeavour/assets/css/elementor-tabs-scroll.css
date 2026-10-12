@@ -1,0 +1,143 @@
+@charset "UTF-8";
+/**
+ * Slide controls for Nested Tabs that do not fit.
+ *
+ * Elementor can scroll the tab row, but it has no chevron for it. Figma
+ * 4400:21185 puts a 1px line and a 20px chevron at the end of the row, 16px
+ * apart, and only while tabs are out of view. The script builds that
+ * control; this file only draws it.
+ *
+ * The chevron is an Endeavour icon (`endv-chevron-right` / `endv-chevron-left`),
+ * coloured with the brand token. It is a clickable icon, so it takes the
+ * shared hover surface. The tab labels themselves do not.
+ *
+ * Source of truth for `assets/css/elementor-tabs-scroll.css`.
+ * Compile: npx --yes sass assets/scss/elementor-tabs-scroll.scss assets/css/elementor-tabs-scroll.css
+ */
+/**
+ * Endeavour shared design tokens
+ *
+ * Every colour resolves to an Elementor Global Color, so Site Settings stays
+ * the single source of truth. The literal after the comma is only a fallback
+ * for the moment before the kit stylesheet has loaded — never edit it to
+ * change a colour, change the global in Site Settings instead.
+ */
+/**
+ * How a hover settles.
+ *
+ * Deliberately shorter than the 0.3s Elementor uses for `.elementor-button`
+ * and its nav menu pointer. A pointer crosses several targets a second, and at
+ * 0.3s the surface is still catching up when the cursor has already moved on.
+ * Ease-out spends that budget up front, so the change has effectively happened
+ * by the time the eye lands on it.
+ */
+/**
+ * How a press lands: not animated at all.
+ *
+ * Pressed feedback answers an action the visitor just took, so it belongs in
+ * the same frame as the click — anything else reads as the interface lagging
+ * behind the finger. Only the release eases back, over the hover duration.
+ */
+/**
+ * How something travels.
+ *
+ * Movement needs time to be followed, which is a different job from a colour
+ * settling under a cursor, so this is not the hover duration. Reserved for
+ * things that actually move — the off-canvas levels, the read-more chevron.
+ */
+.elementor-widget-n-tabs .e-n-tabs.endeavour-tabs-scrollable {
+  position: relative;
+}
+
+.elementor-widget-n-tabs .endeavour-tabs-scroll {
+  align-items: center;
+  background-color: var(--e-global-color-c000001, #fff);
+  display: flex;
+  gap: 16px;
+  position: absolute;
+  z-index: 3;
+}
+.elementor-widget-n-tabs .endeavour-tabs-scroll--prev {
+  left: 0;
+}
+.elementor-widget-n-tabs .endeavour-tabs-scroll--next {
+  right: 0;
+}
+.elementor-widget-n-tabs .endeavour-tabs-scroll[hidden] {
+  display: none;
+}
+
+.elementor-widget-n-tabs .e-n-tabs-heading.endeavour-tabs-draggable {
+  cursor: grab;
+  touch-action: pan-y;
+}
+.elementor-widget-n-tabs .e-n-tabs-heading.endeavour-tabs-draggable.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.elementor-widget-n-tabs .endeavour-tabs-scroll__line {
+  align-self: stretch;
+  background-color: var(--e-global-color-accent, #d3d7e0);
+  width: 1px;
+}
+
+.elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button {
+  appearance: none;
+  background-color: var(--e-global-color-c000001, #fff);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--e-global-color-primary, #1a66ff);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0;
+  position: relative;
+  transition-duration: 100ms;
+  transition-timing-function: ease-out;
+}
+.elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button::before {
+  background-color: var(--e-global-color-c00000f, rgba(0, 0, 0, 0.0392156863));
+  border-radius: 8px;
+  content: "";
+  inset: -6px;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: background-color 100ms ease-out, opacity 100ms ease-out;
+}
+.elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button > * {
+  position: relative;
+}
+.elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button:hover, .elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button:focus {
+  background-color: var(--e-global-color-c000001, #fff);
+  border: 0;
+  box-shadow: none;
+  color: var(--e-global-color-primary, #1a66ff);
+}
+.elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button:hover::before {
+  opacity: 1;
+}
+.elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button:active::before {
+  background-color: var(--e-global-color-c000010, rgba(0, 0, 0, 0.0784313725));
+  opacity: 1;
+  transition-duration: 0s;
+}
+.elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button:focus-visible {
+  outline: 0;
+}
+.elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button:focus-visible::before {
+  box-shadow: 0 0 0 2px var(--e-global-color-c000001, #fff), 0 0 0 4px var(--e-global-color-primary, #1a66ff);
+  opacity: 1;
+}
+
+@media (forced-colors: active) {
+  .elementor-widget-n-tabs .endeavour-tabs-scroll .endeavour-tabs-scroll__button:focus-visible::before {
+    box-shadow: none;
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+}
+
+/*# sourceMappingURL=elementor-tabs-scroll.css.map */

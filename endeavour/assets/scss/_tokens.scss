@@ -1,0 +1,106 @@
+/**
+ * Endeavour shared design tokens
+ *
+ * Every colour resolves to an Elementor Global Color, so Site Settings stays
+ * the single source of truth. The literal after the comma is only a fallback
+ * for the moment before the kit stylesheet has loaded — never edit it to
+ * change a colour, change the global in Site Settings instead.
+ */
+
+// ---------------------------------------------------------------------------
+// Colour
+// ---------------------------------------------------------------------------
+
+$color-white: var(--e-global-color-c000001, #fff);
+$color-alt: var(--e-global-color-c000002, #f7f8fa);
+$color-ink: var(--e-global-color-secondary, #1f2533);
+$color-muted: var(--e-global-color-text, #656f85);
+$color-line: var(--e-global-color-accent, #d3d7e0);
+$color-brand: var(--e-global-color-primary, #1a66ff);
+$color-error: var(--e-global-color-c00000d, #c21f1f);
+
+// Kit palette: Support / Hover, Support / Pressed and their Prominent
+// counterparts. Translucent black, so one token works on any background.
+$overlay-hover: var(--e-global-color-c00000f, #0000000a);
+$overlay-pressed: var(--e-global-color-c000010, #00000014);
+$overlay-hover-prominent: var(--e-global-color-c000011, #00000014);
+$overlay-pressed-prominent: var(--e-global-color-c000012, #00000029);
+
+// ---------------------------------------------------------------------------
+// Interaction
+// ---------------------------------------------------------------------------
+
+/**
+ * How a hover settles.
+ *
+ * Deliberately shorter than the 0.3s Elementor uses for `.elementor-button`
+ * and its nav menu pointer. A pointer crosses several targets a second, and at
+ * 0.3s the surface is still catching up when the cursor has already moved on.
+ * Ease-out spends that budget up front, so the change has effectively happened
+ * by the time the eye lands on it.
+ */
+$hover-duration: 100ms;
+$hover-ease: ease-out;
+
+/**
+ * How a press lands: not animated at all.
+ *
+ * Pressed feedback answers an action the visitor just took, so it belongs in
+ * the same frame as the click — anything else reads as the interface lagging
+ * behind the finger. Only the release eases back, over the hover duration.
+ */
+$press-duration: 0s;
+
+/**
+ * How something travels.
+ *
+ * Movement needs time to be followed, which is a different job from a colour
+ * settling under a cursor, so this is not the hover duration. Reserved for
+ * things that actually move — the off-canvas levels, the read-more chevron.
+ */
+$motion-duration: 0.3s;
+
+// The hover surface every clickable element shares. The radius mirrors Site
+// Settings > Buttons; the insets mirror the Link button, which pads 4px/8px
+// around its label and sits in a 32px square when it is icon-only.
+$hover-radius: 8px;
+$hover-inset-text: -4px -8px;
+
+// The ring of space that turns a bare glyph into that square: 6px around the
+// 20px icon. Kept as a positive value so an element that can carry real padding
+// uses it directly, while a pseudo-element surface negates it to grow outwards.
+$icon-surface-padding: 6px;
+$hover-inset-icon: -$icon-surface-padding;
+
+// Card/Hover, Figma 2017:7741. Offset 0 32, blur 64, spread 0, #00000014.
+// One value for every container whose hover switch is on. Change it here.
+$card-hover-shadow: 0 32px 64px #00000014;
+
+// ---------------------------------------------------------------------------
+// Mixins
+// ---------------------------------------------------------------------------
+
+@mixin ink($color) {
+	color: $color;
+	fill: $color;
+}
+
+// Paint state overlays as a background image so background-color stays with
+// Elementor.
+@mixin overlay($color) {
+	background-image: linear-gradient($color, $color);
+}
+
+// Figma draws every state ring as two stacked strokes around the element: a 2px
+// white Contrast Enforcer, so the ring reads on any background, and the 2px
+// State Indicator itself. That leaves 2px of white between the element and the
+// coloured line — the gap is part of the ring, not a margin on the element.
+@mixin state-ring($color) {
+	box-shadow:
+		0 0 0 2px $color-white,
+		0 0 0 4px $color;
+}
+
+@mixin focus-ring {
+	@include state-ring($color-brand);
+}

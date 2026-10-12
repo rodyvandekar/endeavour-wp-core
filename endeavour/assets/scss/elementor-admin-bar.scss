@@ -1,0 +1,62 @@
+/**
+ * Endeavour — room for the WordPress admin bar
+ *
+ * WordPress makes room for its own bar with `html { margin-top }`, which is
+ * why ordinary page content starts below it. Anything positioned `fixed` is
+ * laid out against the viewport rather than that margin, so it ignores the
+ * reservation and slides underneath the bar. In this header that is the sticky
+ * bar itself and the off-canvas layer.
+ *
+ * The offset is WordPress's own `--wp-admin--admin-bar--height`, set on `html`
+ * at 32px and 46px below 783px, so this follows the bar instead of restating
+ * its height in two places.
+ *
+ * Nothing here affects visitors: the file is only enqueued while the bar is
+ * showing — see `endeavour_child_elementor_styles()`.
+ *
+ * Source of truth for `assets/css/elementor-admin-bar.css`.
+ * Compile: npx --yes sass assets/scss/elementor-admin-bar.scss assets/css/elementor-admin-bar.css
+ */
+
+$admin-bar-height: var(--wp-admin--admin-bar--height, 32px);
+
+body.admin-bar {
+	/**
+	 * Below 783px WordPress switches the bar to `position: absolute`, so it
+	 * scrolls away with the page. A header held one bar-height down would then
+	 * leave an empty strip once the bar has gone, so pin the bar there too and
+	 * the offset holds at every scroll position. The space is already reserved
+	 * by `html { margin-top }`, so this only changes what the bar sticks to.
+	 *
+	 * The id alone ties with core's own rule, and print order between core and
+	 * theme styles is not something to lean on, so the body class breaks the
+	 * tie on specificity instead.
+	 */
+	#wpadminbar {
+		position: fixed;
+	}
+
+	/**
+	 * Elementor's sticky writes `position: fixed` and `top: 0` inline the
+	 * moment the header sticks. An inline declaration outranks every selector,
+	 * so there is no specificity to win with here and `!important` is the only
+	 * lever. The Sticky section's own Offset control would do it without this,
+	 * but it applies to everyone — a visitor would get a 32px gap above a
+	 * header for a bar they never see.
+	 */
+	.elementor-sticky--active {
+		top: $admin-bar-height !important;
+	}
+
+	/**
+	 * The off-canvas layer is the full-viewport box the panel is aligned
+	 * inside, so moving its top edge carries the panel and its contents along
+	 * and the menu keeps its distance from the header instead of disappearing
+	 * behind it. Shortening it by the same amount keeps the bottom edge on the
+	 * viewport.
+	 */
+	.e-off-canvas {
+		block-size: calc(100% - #{$admin-bar-height});
+		inset-block-start: $admin-bar-height;
+	}
+}
