@@ -1,0 +1,42 @@
+# Build a signed release when a version tag is pushed.
+# The tag must match the Version header, for example v1.2.0.
+# ENDEAVOUR_SIGNING_KEY is the base64 secret key, masked and protected.
+
+stages:
+  - test
+  - release
+
+lint:
+  stage: test
+  image: php:8.2-cli
+  rules:
+    - if: $CI_COMMIT_BRANCH
+  script:
+    - find . -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+
+release-package:
+  stage: release
+  image: php:8.2-cli
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+  script:
+    - php bin/build-release.php
+    - |
+      curl --fail --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --upload-file build/endeavour.zip \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/endeavour/${CI_COMMIT_TAG}/endeavour.zip"
+      curl --fail --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --upload-file build/manifest.json \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/endeavour/${CI_COMMIT_TAG}/manifest.json"
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: $CI_COMMIT_TAG
+    description: $CI_COMMIT_TAG_MESSAGE
+    assets:
+      links:
+        - name: manifest.json
+          url: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/endeavour/${CI_COMMIT_TAG}/manifest.json
+          link_type: other
+        - name: endeavour.zip
+          url: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/endeavour/${CI_COMMIT_TAG}/endeavour.zip
+          link_type: package

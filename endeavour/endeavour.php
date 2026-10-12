@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ENDEAVOUR_VERSION', '1.1.0' );
+define( 'ENDEAVOUR_VERSION', '1.2.0' );
 define( 'ENDEAVOUR_FILE', __FILE__ );
 define( 'ENDEAVOUR_DIR', plugin_dir_path( ENDEAVOUR_FILE ) );
 define( 'ENDEAVOUR_URL', plugin_dir_url( ENDEAVOUR_FILE ) );
@@ -64,3 +64,4 @@ require_once ENDEAVOUR_DIR . 'inc/elementor-carousel-nav.php';
 require_once ENDEAVOUR_DIR . 'inc/elementor-search-suggestions.php';
 require_once ENDEAVOUR_DIR . 'inc/gravity-forms-submit-note.php';
 require_once ENDEAVOUR_DIR . 'inc/assets.php';
+require_once ENDEAVOUR_DIR . 'inc/updater.php';

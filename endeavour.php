@@ -3,7 +3,7 @@
  * Plugin Name: Endeavour
  * Plugin URI: https://endeavour.nl
  * Description: Design-system behaviour for the Endeavour site: post types, Elementor widgets and the compiled styles.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Requires at least: 6.4
  * Requires PHP: 8.2
  * Author: Endeavour
