@@ -10,7 +10,7 @@
 
 $root = dirname( __DIR__ );
 
-require_once $root . '/endeavour/inc/update-signature.php';
+require_once $root . '/inc/update-signature.php';
 
 $tag = getenv( 'CI_COMMIT_TAG' );
 if ( ! is_string( $tag ) || '' === $tag ) {
@@ -24,8 +24,8 @@ if ( 1 !== preg_match( '/^v(\d+\.\d+\.\d+)$/', $tag, $matches ) ) {
 }
 
 $version = $matches[1];
-$header  = endeavour_release_header_version( $root . '/endeavour.php' );
-$constant = endeavour_release_constant_version( $root . '/endeavour/endeavour.php' );
+$header   = endeavour_release_header_version( $root . '/endeavour.php' );
+$constant = endeavour_release_constant_version( $root . '/endeavour.php' );
 
 if ( $header !== $version || $constant !== $version ) {
 	fwrite(
@@ -107,9 +107,9 @@ if ( false === $written ) {
 echo "Built {$version}\n";
 
 /**
- * Version from the must-use plugin header.
+ * Version from the plugin header.
  *
- * @param string $file Loader path.
+ * @param string $file Main plugin file.
  */
 function endeavour_release_header_version( string $file ): string {
 	$contents = file_get_contents( $file );
@@ -121,9 +121,9 @@ function endeavour_release_header_version( string $file ): string {
 }
 
 /**
- * Version constant from the plugin bootstrap.
+ * Version constant from the main plugin file.
  *
- * @param string $file Bootstrap path.
+ * @param string $file Main plugin file.
  */
 function endeavour_release_constant_version( string $file ): string {
 	$contents = file_get_contents( $file );
@@ -135,7 +135,7 @@ function endeavour_release_constant_version( string $file ): string {
 }
 
 /**
- * Zip the loader and the plugin directory.
+ * Zip the plugin as wp-content/plugins/endeavour.
  *
  * @param string $root     Repository root.
  * @param string $zip_path Destination zip.
@@ -147,26 +147,32 @@ function endeavour_release_zip( string $root, string $zip_path ): void {
 		exit( 1 );
 	}
 
-	$zip->addFile( $root . '/endeavour.php', 'endeavour.php' );
-	$iterator = new RecursiveIteratorIterator(
-		new RecursiveDirectoryIterator( $root . '/endeavour', FilesystemIterator::SKIP_DOTS ),
-		RecursiveIteratorIterator::SELF_FIRST
-	);
+	$prefix = 'endeavour/';
+	$zip->addEmptyDir( 'endeavour' );
+	$zip->addFile( $root . '/endeavour.php', $prefix . 'endeavour.php' );
 
-	foreach ( $iterator as $item ) {
-		$relative = 'endeavour/' . substr( $item->getPathname(), strlen( $root . '/endeavour/' ) );
-		$relative = str_replace( '\\', '/', $relative );
+	foreach ( array( 'inc', 'assets' ) as $directory ) {
+		$base     = $root . '/' . $directory;
+		$iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $base, FilesystemIterator::SKIP_DOTS ),
+			RecursiveIteratorIterator::SELF_FIRST
+		);
 
-		if ( str_ends_with( $relative, '.css.map' ) ) {
-			continue;
+		foreach ( $iterator as $item ) {
+			$relative = $prefix . $directory . '/' . substr( $item->getPathname(), strlen( $base ) + 1 );
+			$relative = str_replace( '\\', '/', $relative );
+
+			if ( str_ends_with( $relative, '.css.map' ) ) {
+				continue;
+			}
+
+			if ( $item->isDir() ) {
+				$zip->addEmptyDir( $relative );
+				continue;
+			}
+
+			$zip->addFile( $item->getPathname(), $relative );
 		}
-
-		if ( $item->isDir() ) {
-			$zip->addEmptyDir( $relative );
-			continue;
-		}
-
-		$zip->addFile( $item->getPathname(), $relative );
 	}
 
 	$zip->close();

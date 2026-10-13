@@ -1,62 +1,51 @@
 # Endeavour
 
-Must-use plugin voor het Endeavour design system: post types, Elementor-widgets en de gecompileerde styles.
+WordPress-plugin voor het Endeavour design system: post types, Elementor-widgets en de gecompileerde styles.
 
-WordPress laadt alleen PHP-bestanden die direct in `wp-content/mu-plugins/` staan. De root van deze repository is die map. `endeavour.php` laadt de code in de map `endeavour/`.
+De plugin staat in `wp-content/plugins/endeavour/` en verschijnt in de gewone pluginlijst. Updates komen uit de releases van deze GitLab-repository en zijn te installeren via **Plugins → Bijwerken**.
 
-De plugin verschijnt niet bij de gewone plugins. Een nieuwe release installeer je via **Extra → Endeavour**.
+## Installeren op een site
 
-Het versienummer staat op twee plekken en moet gelijk zijn: de header van `endeavour.php` en `ENDEAVOUR_VERSION` in `endeavour/endeavour.php`.
+1. Download `endeavour.zip` van de laatste release, of pak die zip uit CI.
+2. Upload hem via **Plugins → Nieuwe plugin → Plugin uploaden**, of pak hem uit naar `wp-content/plugins/endeavour/`.
+3. Activeer **Endeavour** eenmalig.
 
-## Installeren
-
-Op een omgeving waar `wp-content/mu-plugins` nog niet bestaat:
-
-```bash
-git clone git@gitlab.pxlwidgets.com:internal/elementor-team/endeavour.git wp-content/mu-plugins
-```
-
-Zet daarna in `wp-config.php` een token met alleen leesrechten. Een project access token met scope `read_api`:
+Zet in `wp-config.php`, boven “That’s all, stop editing!”:
 
 ```php
-define( 'ENDEAVOUR_UPDATE_TOKEN', 'glpat-...' );
+define( 'ENDEAVOUR_UPDATE_TOKEN', 'glpat-…' );
 ```
 
-Of een deploy token, geschreven als gebruiker en token:
+Dat is een project access token met alleen `read_api`, of een deploy token als `gebruikersnaam:token`. Hetzelfde read-only token mag op alle sites. Zonder token laat WordPress geen update zien.
 
-```php
-define( 'ENDEAVOUR_UPDATE_TOKEN', 'gitlab+deploy-token-1:gldt-...' );
-```
+Automatisch bijwerken kan op twee manieren:
 
-De plugin is meteen actief. Een must-use plugin heeft geen activeer-knop.
+- Per site de schakelaar **Automatische updates inschakelen** op de pluginrij.
+- Of in `wp-config.php`: `define( 'ENDEAVOUR_AUTO_UPDATE', true );`. Die constante wint van de schakelaar.
 
-Om nieuwe releases zonder knop te installeren:
+## Lokaal ontwikkelen
 
-```php
-define( 'ENDEAVOUR_AUTO_UPDATE', true );
-```
+Deze checkout is de git-repository zelf. Wijzigingen gaan via commit en push. Klik hier niet op **Bijwerken**: WordPress overschrijft dan de werkkopie met de release-zip.
+
+Andere sites installeren alleen de zip en werken bij via het plugin-scherm.
 
 ## Een release maken
 
-1. Zet de base64-inhoud van `.signing/secret.key` in GitLab als variabele `ENDEAVOUR_SIGNING_KEY`. Maskeer hem en beperk hem tot protected tags. Het bestand blijft buiten git.
-2. Zet onder **Settings → CI/CD → Job token permissions** dat deze pipeline naar de package registry mag schrijven.
-3. Hoog het versienummer op beide plekken op, bijvoorbeeld naar `1.3.0`.
-4. Commit en push naar `main`.
-5. Zet een annotated tag die exact die versie is, en push de tag:
+Het versienummer staat op twee plekken in `endeavour.php` en moet gelijk zijn: de header `Version` en de constante `ENDEAVOUR_VERSION`.
+
+Eenmalig in GitLab, bij deze repository:
+
+1. **Settings → CI/CD → Variables**: `ENDEAVOUR_SIGNING_KEY`, masked en protected. De waarde staat in `.signing/secret.key` op de machine waar de sleutel is aangemaakt. Die map staat in `.gitignore`.
+2. **Settings → CI/CD → Job token permissions**: dit project mag naar de package registry schrijven.
+
+Daarna:
 
 ```bash
-git tag -a v1.3.0 -m "Korte changelog van deze release."
-git push origin v1.3.0
+# versie in endeavour.php ophogen, committen en pushen
+git tag -a v1.4.0 -m "Korte release-notitie."
+git push origin v1.4.0
 ```
 
-De pipeline bouwt `endeavour.zip` en een ondertekend `manifest.json`, en hangt die aan de GitLab-release. Elke site ziet de release daarna onder **Extra → Endeavour**. De dagelijkse controle doet hetzelfde.
+CI controleert of de tag bij de versie hoort, ondertekent de zip en publiceert `endeavour.zip` plus `manifest.json`. De tagtekst wordt de changelog.
 
-De handtekening wordt gecontroleerd vóór er een bestand wordt vervangen. Lukt de nieuwe code niet, dan zet de site de vorige installatie terug. Die reservekopie kan ook met de hand via hetzelfde scherm.
-
-## Styles
-
-SCSS is de bron. Compileer vanuit de map `endeavour/` en commit de CSS mee:
-
-```bash
-npx --yes sass assets/scss/elementor-search.scss assets/css/elementor-search.css --no-source-map
-```
+Sites met het token zien daarna een update zodra de tag hoger is dan de geïnstalleerde versie. WordPress downloadt de zip pas nadat de handtekening en de sha256-checksum kloppen.
