@@ -4,3 +4,4 @@ node_modules/
 .sass-cache/
 .signing/
 build/
+inc/update-token.php

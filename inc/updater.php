@@ -381,13 +381,6 @@ function endeavour_project_url(): string {
  * @return array|WP_Error Manifest payload.
  */
 function endeavour_fetch_verified_release() {
-	if ( ! defined( 'ENDEAVOUR_UPDATE_TOKEN' ) || '' === ENDEAVOUR_UPDATE_TOKEN ) {
-		return new WP_Error(
-			'endeavour_update_token',
-			__( 'Set ENDEAVOUR_UPDATE_TOKEN in wp-config.php. Use a project access token with only read_api, or a deploy token written as username:token.', 'endeavour' )
-		);
-	}
-
 	$url = sprintf(
 		'https://%s/api/v4/projects/%s/releases/permalink/latest',
 		ENDEAVOUR_GITLAB_HOST,
@@ -431,7 +424,27 @@ function endeavour_fetch_verified_release() {
 }
 
 /**
- * Download JSON with the site's read token.
+ * Read token shipped inside a release zip, or the optional wp-config constant.
+ *
+ * Sites do not need this. It only exists when the GitLab release stays private.
+ */
+function endeavour_update_token_value(): string {
+	if ( defined( 'ENDEAVOUR_UPDATE_TOKEN' ) && is_string( ENDEAVOUR_UPDATE_TOKEN ) && '' !== ENDEAVOUR_UPDATE_TOKEN ) {
+		return ENDEAVOUR_UPDATE_TOKEN;
+	}
+
+	$file = __DIR__ . '/update-token.php';
+	if ( ! is_file( $file ) ) {
+		return '';
+	}
+
+	$token = include $file;
+
+	return is_string( $token ) ? $token : '';
+}
+
+/**
+ * Download JSON from this GitLab project.
  *
  * @param string $url GitLab API or package URL.
  * @return array|WP_Error
@@ -452,14 +465,7 @@ function endeavour_update_remote_json( string $url ) {
 
 	$code = wp_remote_retrieve_response_code( $response );
 	if ( 200 !== $code ) {
-		return new WP_Error(
-			'endeavour_update_http',
-			sprintf(
-				/* translators: %d: HTTP status code. */
-				__( 'GitLab answered with HTTP %d.', 'endeavour' ),
-				$code
-			)
-		);
+		return endeavour_update_http_error( $code );
 	}
 
 	$decoded = json_decode( wp_remote_retrieve_body( $response ), true );
@@ -484,9 +490,8 @@ function endeavour_update_remote_json( string $url ) {
 function endeavour_update_http_args( array $extra = array() ): array {
 	$headers = array();
 
-	if ( defined( 'ENDEAVOUR_UPDATE_TOKEN' ) && '' !== ENDEAVOUR_UPDATE_TOKEN ) {
-		$token = ENDEAVOUR_UPDATE_TOKEN;
-
+	$token = endeavour_update_token_value();
+	if ( '' !== $token ) {
 		if ( str_contains( $token, ':' ) ) {
 			$headers['Authorization'] = 'Basic ' . base64_encode( $token );
 		} else {
@@ -613,6 +618,36 @@ function endeavour_update_url_parts( string $url ): ?array {
 }
 
 /**
+ * Explain a failed GitLab response without asking for wp-config.php.
+ *
+ * @param int $code HTTP status code.
+ */
+function endeavour_update_http_error( int $code ): WP_Error {
+	if ( in_array( $code, array( 401, 403 ), true ) ) {
+		return new WP_Error(
+			'endeavour_update_http',
+			__( 'GitLab refused the download. The release has to be publicly readable.', 'endeavour' )
+		);
+	}
+
+	if ( 404 === $code ) {
+		return new WP_Error(
+			'endeavour_update_http',
+			__( 'GitLab has no publicly visible release yet.', 'endeavour' )
+		);
+	}
+
+	return new WP_Error(
+		'endeavour_update_http',
+		sprintf(
+			/* translators: %d: HTTP status code. */
+			__( 'GitLab answered with HTTP %d.', 'endeavour' ),
+			$code
+		)
+	);
+}
+
+/**
  * Stream a package to disk.
  *
  * @param string $url  Package URL.
@@ -644,14 +679,7 @@ function endeavour_update_download( string $url, string $file ) {
 
 	$code = wp_remote_retrieve_response_code( $response );
 	if ( 200 !== $code || ! is_file( $file ) ) {
-		return new WP_Error(
-			'endeavour_update_http',
-			sprintf(
-				/* translators: %d: HTTP status code. */
-				__( 'GitLab answered with HTTP %d.', 'endeavour' ),
-				$code
-			)
-		);
+		return endeavour_update_http_error( $code );
 	}
 
 	return true;

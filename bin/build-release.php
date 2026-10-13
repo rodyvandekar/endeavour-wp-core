@@ -171,9 +171,38 @@ function endeavour_release_zip( string $root, string $zip_path ): void {
 				continue;
 			}
 
+			if ( str_ends_with( $relative, 'inc/update-token.php' ) ) {
+				continue;
+			}
+
 			$zip->addFile( $item->getPathname(), $relative );
 		}
 	}
 
+	$token_php = endeavour_release_token_php();
+	if ( '' !== $token_php ) {
+		$zip->addFromString( $prefix . 'inc/update-token.php', $token_php );
+	}
+
 	$zip->close();
+}
+
+/**
+ * Optional read token, written only into the release zip.
+ *
+ * The CI variable keeps a private registry readable without wp-config.php.
+ * A public package registry does not need it.
+ */
+function endeavour_release_token_php(): string {
+	$token = getenv( 'ENDEAVOUR_UPDATE_TOKEN' );
+	if ( ! is_string( $token ) ) {
+		return '';
+	}
+
+	$token = trim( $token );
+	if ( '' === $token ) {
+		return '';
+	}
+
+	return "<?php\nreturn " . var_export( $token, true ) . ";\n";
 }

@@ -10,18 +10,9 @@ De plugin staat in `wp-content/plugins/endeavour/` en verschijnt in de gewone pl
 2. Upload hem via **Plugins → Nieuwe plugin → Plugin uploaden**, of pak hem uit naar `wp-content/plugins/endeavour/`.
 3. Activeer **Endeavour** eenmalig.
 
-Zet in `wp-config.php`, boven “That’s all, stop editing!”:
+Er hoeft niets in `wp-config.php`. WordPress downloadt de release zelf. De handtekening en de checksum blijven de controle dat het bestand echt van deze repository komt.
 
-```php
-define( 'ENDEAVOUR_UPDATE_TOKEN', 'glpat-…' );
-```
-
-Dat is een project access token met alleen `read_api`, of een deploy token als `gebruikersnaam:token`. Hetzelfde read-only token mag op alle sites. Zonder token laat WordPress geen update zien.
-
-Automatisch bijwerken kan op twee manieren:
-
-- Per site de schakelaar **Automatische updates inschakelen** op de pluginrij.
-- Of in `wp-config.php`: `define( 'ENDEAVOUR_AUTO_UPDATE', true );`. Die constante wint van de schakelaar.
+Automatisch bijwerken zet je aan met de schakelaar **Automatische updates inschakelen** op de pluginrij.
 
 ## Lokaal ontwikkelen
 
@@ -37,6 +28,9 @@ Eenmalig in GitLab, bij deze repository:
 
 1. **Settings → CI/CD → Variables**: `ENDEAVOUR_SIGNING_KEY`, masked en protected. De waarde staat in `.signing/secret.key` op de machine waar de sleutel is aangemaakt. Die map staat in `.gitignore`.
 2. **Settings → CI/CD → Job token permissions**: dit project mag naar de package registry schrijven.
+3. **Settings → General → Visibility**: zet het project op Public, zodat sites de release kunnen downloaden zonder token. De broncode staat dan ook op de sites zelf; de privé-instelling beschermt hem niet extra.
+
+Wil de repository privé blijven, zet dan één CI-variabele `ENDEAVOUR_UPDATE_TOKEN` (masked, protected): een project access token met alleen `read_api`, of een deploy token als `gebruikersnaam:token`. CI stopt die alleen in de release-zip, niet in git en niet in `wp-config.php`. Een publieke package registry heeft dit niet nodig.
 
 Daarna:
 
@@ -48,4 +42,4 @@ git push origin v1.4.0
 
 CI controleert of de tag bij de versie hoort, ondertekent de zip en publiceert `endeavour.zip` plus `manifest.json`. De tagtekst wordt de changelog.
 
-Sites met het token zien daarna een update zodra de tag hoger is dan de geïnstalleerde versie. WordPress downloadt de zip pas nadat de handtekening en de sha256-checksum kloppen.
+Sites zien daarna een update zodra de tag hoger is dan de geïnstalleerde versie. WordPress downloadt de zip pas nadat de handtekening en de sha256-checksum kloppen.
