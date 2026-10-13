@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Endeavour
+ * Plugin Name: Endeavour WP Core
  * Plugin URI: https://endeavour.nl
  * Description: Design-system behaviour for the Endeavour site: post types, Elementor widgets and the compiled styles.
  * Version: 1.3.1
@@ -75,4 +75,5 @@ require_once ENDEAVOUR_DIR . 'inc/elementor-carousel-nav.php';
 require_once ENDEAVOUR_DIR . 'inc/elementor-search-suggestions.php';
 require_once ENDEAVOUR_DIR . 'inc/gravity-forms-submit-note.php';
 require_once ENDEAVOUR_DIR . 'inc/assets.php';
+require_once ENDEAVOUR_DIR . 'inc/required-plugin.php';
 require_once ENDEAVOUR_DIR . 'inc/updater.php';
