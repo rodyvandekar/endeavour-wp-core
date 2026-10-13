@@ -28,9 +28,9 @@ Eenmalig in GitLab, bij deze repository:
 
 1. **Settings → CI/CD → Variables**: `ENDEAVOUR_SIGNING_KEY`, masked en protected. De waarde staat in `.signing/secret.key` op de machine waar de sleutel is aangemaakt. Die map staat in `.gitignore`.
 2. **Settings → CI/CD → Job token permissions**: dit project mag naar de package registry schrijven.
-3. **Settings → General → Visibility**: zet het project op Public, zodat sites de release kunnen downloaden zonder token. De broncode staat dan ook op de sites zelf; de privé-instelling beschermt hem niet extra.
+3. **Settings → Access tokens**: maak een project access token met rol Reporter en alleen het recht `read_api`. Zet die waarde als CI-variabele `ENDEAVOUR_UPDATE_TOKEN`, masked. Vink Protected alleen aan als de versie-tags (`v*`) ook protected zijn, anders krijgt de release-job de variabele niet.
 
-Wil de repository privé blijven, zet dan één CI-variabele `ENDEAVOUR_UPDATE_TOKEN` (masked, protected): een project access token met alleen `read_api`, of een deploy token als `gebruikersnaam:token`. CI stopt die alleen in de release-zip, niet in git en niet in `wp-config.php`. Een publieke package registry heeft dit niet nodig.
+De groep Internal laat geen publiek project toe. CI stopt het token alleen in de release-zip, niet in git en niet in `wp-config.php`. Op de sites zelf komt niets te staan.
 
 Daarna:
 
