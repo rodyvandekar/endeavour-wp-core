@@ -2,8 +2,9 @@
 /**
  * Build a signed Endeavour release.
  *
- * Reads the plugin version, checks it against the git tag, and writes
- * build/endeavour.zip and build/manifest.json. GitHub Actions uploads both.
+ * Reads the version, slug and requirements from endeavour.php, checks the
+ * version against the git tag, and writes build/endeavour.zip and
+ * build/manifest.json. GitHub Actions uploads both.
  *
  * @package Endeavour
  */
@@ -27,14 +28,21 @@ if ( 1 !== preg_match( '/^v(\d+\.\d+\.\d+)$/', $tag, $matches ) ) {
 }
 
 $version = $matches[1];
-$header   = endeavour_release_header_version( $root . '/endeavour.php' );
-$constant = endeavour_release_constant_version( $root . '/endeavour.php' );
+$main    = $root . '/endeavour.php';
+$header  = endeavour_release_header( $main, 'Version' );
+$define  = endeavour_release_define( $main, 'ENDEAVOUR_VERSION' );
 
-if ( $header !== $version || $constant !== $version ) {
+if ( $header !== $version || $define !== $version ) {
 	fwrite(
 		STDERR,
-		"Version mismatch. Tag is {$version}, header is {$header}, constant is {$constant}.\n"
+		"Version mismatch. Tag is {$version}, header is {$header}, constant is {$define}.\n"
 	);
+	exit( 1 );
+}
+
+$slug = endeavour_release_define( $main, 'ENDEAVOUR_SLUG' );
+if ( 1 !== preg_match( '/^[a-z0-9-]+$/', $slug ) ) {
+	fwrite( STDERR, "ENDEAVOUR_SLUG must be a lowercase folder name.\n" );
 	exit( 1 );
 }
 
@@ -48,14 +56,8 @@ if ( ! is_string( $secret ) || SODIUM_CRYPTO_SIGN_SECRETKEYBYTES !== strlen( $se
 
 $repository = getenv( 'GITHUB_REPOSITORY' );
 if ( ! is_string( $repository ) || 1 !== preg_match( '#^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$#', $repository ) ) {
-	$repository = 'rodyvandekar/endeavour-wp-core';
+	$repository = endeavour_release_define( $main, 'ENDEAVOUR_REPOSITORY' );
 }
-
-$package = sprintf(
-	'https://github.com/%s/releases/download/%s/endeavour.zip',
-	$repository,
-	$tag
-);
 
 $build = $root . '/build';
 if ( ! is_dir( $build ) && ! mkdir( $build, 0755, true ) ) {
@@ -68,22 +70,19 @@ if ( is_file( $zip_path ) ) {
 	unlink( $zip_path );
 }
 
-endeavour_release_zip( $root, $zip_path );
+endeavour_release_zip( $root, $zip_path, $slug );
 
 $changelog = getenv( 'CI_COMMIT_TAG_MESSAGE' );
-if ( ! is_string( $changelog ) ) {
-	$changelog = '';
-}
-$changelog = trim( $changelog );
+$changelog = is_string( $changelog ) ? trim( $changelog ) : '';
 
 $payload = array(
-	'version'     => $version,
-	'tag'         => $tag,
-	'package'     => $package,
-	'sha256'      => hash_file( 'sha256', $zip_path ),
-	'changelog'   => $changelog,
-	'requires_php' => '8.2',
-	'requires_wp' => '6.4',
+	'version'      => $version,
+	'tag'          => $tag,
+	'package'      => sprintf( 'https://github.com/%s/releases/download/%s/endeavour.zip', $repository, $tag ),
+	'sha256'       => hash_file( 'sha256', $zip_path ),
+	'changelog'    => $changelog,
+	'requires_php' => endeavour_release_header( $main, 'Requires PHP' ),
+	'requires_wp'  => endeavour_release_header( $main, 'Requires at least' ),
 );
 
 $manifest = array(
@@ -101,51 +100,60 @@ if ( false === $written ) {
 	exit( 1 );
 }
 
-echo "Built {$version}\n";
+echo "Built {$version} as {$slug}\n";
 
 /**
- * Version from the plugin header.
+ * A `Name: value` line from the plugin header.
  *
  * @param string $file Main plugin file.
+ * @param string $name Header name, for example Version.
  */
-function endeavour_release_header_version( string $file ): string {
+function endeavour_release_header( string $file, string $name ): string {
 	$contents = file_get_contents( $file );
-	if ( ! is_string( $contents ) || 1 !== preg_match( '/^\s*\*\s*Version:\s*(\d+\.\d+\.\d+)\s*$/m', $contents, $matches ) ) {
-		return '';
+	$pattern  = '/^\s*\*\s*' . preg_quote( $name, '/' ) . ':\s*(\S+)\s*$/m';
+
+	if ( ! is_string( $contents ) || 1 !== preg_match( $pattern, $contents, $matches ) ) {
+		fwrite( STDERR, "Missing header {$name} in endeavour.php.\n" );
+		exit( 1 );
 	}
 
 	return $matches[1];
 }
 
 /**
- * Version constant from the main plugin file.
+ * A `define( 'NAME', 'value' )` line from the main plugin file.
  *
  * @param string $file Main plugin file.
+ * @param string $name Constant name.
  */
-function endeavour_release_constant_version( string $file ): string {
+function endeavour_release_define( string $file, string $name ): string {
 	$contents = file_get_contents( $file );
-	if ( ! is_string( $contents ) || 1 !== preg_match( "/define\\(\\s*'ENDEAVOUR_VERSION',\\s*'(\\d+\\.\\d+\\.\\d+)'\\s*\\)/", $contents, $matches ) ) {
-		return '';
+	$pattern  = "/define\\(\\s*'" . preg_quote( $name, '/' ) . "',\\s*'([^']*)'\\s*\\)/";
+
+	if ( ! is_string( $contents ) || 1 !== preg_match( $pattern, $contents, $matches ) ) {
+		fwrite( STDERR, "Missing constant {$name} in endeavour.php.\n" );
+		exit( 1 );
 	}
 
 	return $matches[1];
 }
 
 /**
- * Zip the plugin as wp-content/plugins/endeavour.
+ * Zip the plugin as wp-content/plugins/<slug>.
  *
  * @param string $root     Repository root.
  * @param string $zip_path Destination zip.
+ * @param string $slug     Folder name inside the zip.
  */
-function endeavour_release_zip( string $root, string $zip_path ): void {
+function endeavour_release_zip( string $root, string $zip_path, string $slug ): void {
 	$zip = new ZipArchive();
 	if ( true !== $zip->open( $zip_path, ZipArchive::CREATE ) ) {
 		fwrite( STDERR, "Could not create the zip.\n" );
 		exit( 1 );
 	}
 
-	$prefix = 'endeavour/';
-	$zip->addEmptyDir( 'endeavour' );
+	$prefix = $slug . '/';
+	$zip->addEmptyDir( $slug );
 	$zip->addFile( $root . '/endeavour.php', $prefix . 'endeavour.php' );
 
 	foreach ( array( 'inc', 'assets' ) as $directory ) {
@@ -165,10 +173,6 @@ function endeavour_release_zip( string $root, string $zip_path ): void {
 
 			if ( $item->isDir() ) {
 				$zip->addEmptyDir( $relative );
-				continue;
-			}
-
-			if ( str_ends_with( $relative, 'inc/update-token.php' ) ) {
 				continue;
 			}
 

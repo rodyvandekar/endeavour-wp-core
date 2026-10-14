@@ -47,7 +47,7 @@ function endeavour_child_register_offcanvas_menu_assets() {
 			'endeavour-offcanvas-menu',
 			$uri . $stylesheet,
 			array(),
-			(string) filemtime( $directory . $stylesheet )
+			endeavour_asset_version( $directory . $stylesheet )
 		);
 	}
 
@@ -58,7 +58,7 @@ function endeavour_child_register_offcanvas_menu_assets() {
 			'endeavour-offcanvas-menu',
 			$uri . $script,
 			array(),
-			(string) filemtime( $directory . $script ),
+			endeavour_asset_version( $directory . $script ),
 			true
 		);
 	}

@@ -21,7 +21,7 @@ function endeavour_child_register_share_assets() {
 			'endeavour-share',
 			endeavour_url() . '/assets/css/elementor-share.css',
 			array( 'elementor-frontend' ),
-			(string) filemtime( $style_path )
+			endeavour_asset_version( $style_path )
 		);
 	}
 
@@ -30,7 +30,7 @@ function endeavour_child_register_share_assets() {
 			'endeavour-share',
 			endeavour_url() . '/assets/js/elementor-share.js',
 			array(),
-			(string) filemtime( $script_path ),
+			endeavour_asset_version( $script_path ),
 			true
 		);
 	}

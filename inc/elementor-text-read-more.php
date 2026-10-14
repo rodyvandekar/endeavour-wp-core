@@ -135,7 +135,7 @@ function endeavour_enqueue_text_read_more_script() {
 		'endeavour-elementor-text-read-more',
 		endeavour_url() . $relative_path,
 		array( 'elementor-frontend' ),
-		(string) filemtime( $absolute_path ),
+		endeavour_asset_version( $absolute_path ),
 		true
 	);
 }

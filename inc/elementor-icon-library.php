@@ -83,7 +83,7 @@ function endeavour_child_enqueue_icon_picker_guard() {
 		'endeavour-elementor-icon-picker',
 		endeavour_url() . '/assets/js/elementor-icon-picker.js',
 		array( 'elementor-editor' ),
-		(string) filemtime( $script ),
+		endeavour_asset_version( $script ),
 		true
 	);
 }

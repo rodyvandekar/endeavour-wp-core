@@ -161,7 +161,7 @@ function endeavour_loop_carousel_enqueue_script() {
 		'endeavour-loop-carousel',
 		endeavour_url() . '/assets/js/elementor-loop-carousel.js',
 		array( 'elementor-frontend' ),
-		(string) filemtime( $path ),
+		endeavour_asset_version( $path ),
 		true
 	);
 }
@@ -182,7 +182,7 @@ function endeavour_image_carousel_enqueue_script() {
 		'endeavour-image-carousel',
 		endeavour_url() . '/assets/js/elementor-image-carousel.js',
 		array( 'elementor-frontend' ),
-		(string) filemtime( $path ),
+		endeavour_asset_version( $path ),
 		true
 	);
 }
@@ -203,7 +203,7 @@ function endeavour_loop_carousel_enqueue_editor_script() {
 		'endeavour-loop-carousel-editor',
 		endeavour_url() . '/assets/js/elementor-loop-carousel-editor.js',
 		array( 'elementor-editor' ),
-		(string) filemtime( $path ),
+		endeavour_asset_version( $path ),
 		true
 	);
 }

@@ -24,7 +24,7 @@ function endeavour_child_register_overview_link_assets() {
 		'endeavour-overview-link',
 		endeavour_url() . $relative_path,
 		array(),
-		(string) filemtime( $absolute_path )
+		endeavour_asset_version( $absolute_path )
 	);
 }
 add_action( 'wp_enqueue_scripts', 'endeavour_child_register_overview_link_assets', 5 );
