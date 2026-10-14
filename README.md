@@ -12,7 +12,7 @@ De plugin staat in `wp-content/plugins/endeavour/` en verschijnt in de gewone pl
 
 Er hoeft niets in `wp-config.php` en er is geen token nodig. WordPress downloadt de release zelf. De handtekening en de checksum controleren dat het bestand echt van deze repository komt.
 
-Automatisch bijwerken zet je aan met **Automatische updates inschakelen** op de pluginrij.
+WordPress installeert een release niet zelf. De update verschijnt in de pluginlijst, en Plugins → Bijwerken of een beheertool zoals ManageWP installeert hem.
 
 ## Lokaal ontwikkelen
 

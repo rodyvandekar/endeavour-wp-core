@@ -102,9 +102,10 @@ function endeavour_updates_page_url(): string {
 }
 
 /**
- * Install a signed release without a click on each site.
+ * WordPress must not install a release by itself.
  *
- * Set ENDEAVOUR_AUTO_UPDATE to false in wp-config.php to opt one site out.
+ * The offer still appears on Plugins and in the update list, so a management
+ * tool such as ManageWP can install it.
  *
  * @param bool|null $update Whether to update.
  * @param object    $item   Update offer.
@@ -115,11 +116,7 @@ function endeavour_auto_update_plugin( $update, $item ) {
 		return $update;
 	}
 
-	if ( defined( 'ENDEAVOUR_AUTO_UPDATE' ) ) {
-		return (bool) ENDEAVOUR_AUTO_UPDATE;
-	}
-
-	return true;
+	return false;
 }
 
 /**
@@ -222,12 +219,14 @@ function endeavour_github_update( $update, $plugin_data, $plugin_file, $locales 
 	}
 
 	return array(
-		'slug'         => 'endeavour',
-		'version'      => $payload['version'],
-		'url'          => endeavour_project_url(),
-		'package'      => $payload['package'],
-		'requires'     => $payload['requires_wp'] ?? '6.4',
-		'requires_php' => $payload['requires_php'] ?? '8.2',
+		'slug'               => 'endeavour',
+		'version'            => $payload['version'],
+		'url'                => endeavour_project_url(),
+		'package'            => $payload['package'],
+		'requires'           => $payload['requires_wp'] ?? '6.4',
+		'requires_php'       => $payload['requires_php'] ?? '8.2',
+		'autoupdate'         => false,
+		'disable_autoupdate' => true,
 	);
 }
 
