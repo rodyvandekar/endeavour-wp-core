@@ -41,11 +41,19 @@ function endeavour_updater_bootstrap() {
 	add_action( 'network_admin_notices', 'endeavour_update_admin_notice' );
 	add_action( 'admin_post_endeavour_check_updates', 'endeavour_handle_check_updates' );
 
-	if ( wp_installing() || wp_next_scheduled( 'endeavour_update_check' ) ) {
+	if ( wp_installing() ) {
 		return;
 	}
 
-	wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'endeavour_update_check' );
+	$scheduled = function_exists( 'wp_get_scheduled_event' ) ? wp_get_scheduled_event( 'endeavour_update_check' ) : false;
+	if ( $scheduled && isset( $scheduled->schedule ) && 'hourly' !== $scheduled->schedule ) {
+		wp_clear_scheduled_hook( 'endeavour_update_check' );
+		$scheduled = false;
+	}
+
+	if ( ! $scheduled && ! wp_next_scheduled( 'endeavour_update_check' ) ) {
+		wp_schedule_event( time() + HOUR_IN_SECONDS, 'hourly', 'endeavour_update_check' );
+	}
 }
 add_action( 'init', 'endeavour_updater_bootstrap' );
 
@@ -94,9 +102,9 @@ function endeavour_updates_page_url(): string {
 }
 
 /**
- * Honour a forced auto-update flag from wp-config.php.
+ * Install a signed release without a click on each site.
  *
- * Without that constant, the toggle on the Plugins screen decides.
+ * Set ENDEAVOUR_AUTO_UPDATE to false in wp-config.php to opt one site out.
  *
  * @param bool|null $update Whether to update.
  * @param object    $item   Update offer.
@@ -111,14 +119,25 @@ function endeavour_auto_update_plugin( $update, $item ) {
 		return (bool) ENDEAVOUR_AUTO_UPDATE;
 	}
 
-	return $update;
+	return true;
 }
 
 /**
- * Daily check. The Plugins screen reads the stored result.
+ * Hourly check. A newer release is written into the Plugins screen cache.
  */
 function endeavour_run_update_check() {
-	endeavour_store_update_state( endeavour_fetch_verified_release() );
+	$result = endeavour_fetch_verified_release();
+	endeavour_store_update_state( $result );
+
+	if ( is_wp_error( $result ) || ! isset( $result['version'] ) || ! version_compare( (string) $result['version'], ENDEAVOUR_VERSION, '>' ) ) {
+		return;
+	}
+
+	delete_site_transient( 'update_plugins' );
+
+	if ( doing_action( 'endeavour_update_check' ) ) {
+		wp_update_plugins();
+	}
 }
 
 /**
@@ -131,10 +150,20 @@ function endeavour_maybe_refresh_release() {
 		return;
 	}
 
-	$done    = true;
-	$state   = get_option( 'endeavour_update_state', array() );
-	$checked = isset( $state['checked_at'] ) ? (int) $state['checked_at'] : 0;
-	$ttl     = ( is_array( $state ) && '' !== ( $state['error'] ?? '' ) ) ? 2 * MINUTE_IN_SECONDS : 12 * HOUR_IN_SECONDS;
+	$done      = true;
+	$state     = get_option( 'endeavour_update_state', array() );
+	$checked   = isset( $state['checked_at'] ) ? (int) $state['checked_at'] : 0;
+	$error     = is_array( $state ) && '' !== ( $state['error'] ?? '' );
+	$available = is_array( $state ) ? (string) ( $state['available'] ?? '' ) : '';
+	$newer     = '' !== $available && version_compare( $available, ENDEAVOUR_VERSION, '>' );
+
+	if ( $error ) {
+		$ttl = 2 * MINUTE_IN_SECONDS;
+	} elseif ( $newer ) {
+		$ttl = 12 * HOUR_IN_SECONDS;
+	} else {
+		$ttl = HOUR_IN_SECONDS;
+	}
 
 	if ( $checked > time() - $ttl ) {
 		return;
