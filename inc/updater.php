@@ -285,7 +285,7 @@ function endeavour_verify_package_download( $reply, $package, $upgrader, $hook_e
 	}
 
 	if ( ! is_string( $package ) ) {
-		return endeavour_update_error( 'endeavour_update_package', 'The download does not match the signed release.' );
+		return new WP_Error( 'endeavour_update_package', __( 'The download does not match the signed release.', 'endeavour' ) );
 	}
 
 	// Use the manifest from the last check when it matches. Only fetch again when it does not.
@@ -298,16 +298,16 @@ function endeavour_verify_package_download( $reply, $package, $upgrader, $hook_e
 	}
 
 	if ( ! hash_equals( $payload['package'], $package ) ) {
-		return endeavour_update_error( 'endeavour_update_package', 'The download does not match the signed release.' );
+		return new WP_Error( 'endeavour_update_package', __( 'The download does not match the signed release.', 'endeavour' ) );
 	}
 
 	if ( version_compare( $payload['version'], ENDEAVOUR_VERSION, '<' ) ) {
-		return endeavour_update_error( 'endeavour_update_downgrade', 'The signed release is older than the installed version.' );
+		return new WP_Error( 'endeavour_update_downgrade', __( 'The signed release is older than the installed version.', 'endeavour' ) );
 	}
 
 	$file = wp_tempnam( ENDEAVOUR_RELEASE_ZIP );
 	if ( ! is_string( $file ) || '' === $file ) {
-		return endeavour_update_error( 'endeavour_update_temp', 'Could not create a temporary file.' );
+		return new WP_Error( 'endeavour_update_temp', __( 'Could not create a temporary file.', 'endeavour' ) );
 	}
 
 	$downloaded = endeavour_update_download( $payload['package'], $file );
@@ -319,7 +319,7 @@ function endeavour_verify_package_download( $reply, $package, $upgrader, $hook_e
 	$hash = hash_file( 'sha256', $file );
 	if ( ! is_string( $hash ) || ! hash_equals( $payload['sha256'], $hash ) ) {
 		wp_delete_file( $file );
-		return endeavour_update_error( 'endeavour_update_checksum', 'The release checksum does not match.' );
+		return new WP_Error( 'endeavour_update_checksum', __( 'The release checksum does not match.', 'endeavour' ) );
 	}
 
 	return $file;
@@ -346,7 +346,7 @@ function endeavour_upgrader_source( $source, $remote_source, $upgrader, $hook_ex
 
 	$folder = dirname( ENDEAVOUR_BASENAME );
 	if ( '.' === $folder ) {
-		return endeavour_update_error( 'endeavour_update_folder', 'The plugin must live in its own folder.' );
+		return new WP_Error( 'endeavour_update_folder', __( 'The plugin must live in its own folder.', 'endeavour' ) );
 	}
 
 	if ( basename( untrailingslashit( $source ) ) === $folder ) {
@@ -360,7 +360,7 @@ function endeavour_upgrader_source( $source, $remote_source, $upgrader, $hook_ex
 		return trailingslashit( $corrected );
 	}
 
-	return endeavour_update_error( 'endeavour_update_folder', 'The release zip could not be moved into place.' );
+	return new WP_Error( 'endeavour_update_folder', __( 'The release zip could not be moved into place.', 'endeavour' ) );
 }
 
 /**
@@ -387,16 +387,6 @@ function endeavour_project_url(): string {
 }
 
 /**
- * A WP_Error with a translated message.
- *
- * @param string $code    Error code.
- * @param string $message English message, passed through __().
- */
-function endeavour_update_error( string $code, string $message ): WP_Error {
-	return new WP_Error( $code, __( $message, 'endeavour' ) ); // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
-}
-
-/**
  * Latest signed release, or an error.
  *
  * @return array|WP_Error Manifest payload.
@@ -409,7 +399,7 @@ function endeavour_fetch_verified_release() {
 
 	$manifest_url = endeavour_release_asset_url( $release, ENDEAVOUR_RELEASE_MANIFEST );
 	if ( '' === $manifest_url || ! endeavour_update_url_is_allowed( $manifest_url ) ) {
-		return endeavour_update_error( 'endeavour_update_manifest', 'The latest GitHub release has no manifest.json.' );
+		return new WP_Error( 'endeavour_update_manifest', __( 'The latest GitHub release has no manifest.json.', 'endeavour' ) );
 	}
 
 	$manifest = endeavour_update_remote_json( $manifest_url );
@@ -421,7 +411,7 @@ function endeavour_fetch_verified_release() {
 	$signature = isset( $manifest['signature'] ) && is_string( $manifest['signature'] ) ? $manifest['signature'] : '';
 
 	if ( ! endeavour_update_verify( $payload, $signature, ENDEAVOUR_UPDATE_PUBLIC_KEY ) ) {
-		return endeavour_update_error( 'endeavour_update_signature', 'The release signature does not match.' );
+		return new WP_Error( 'endeavour_update_signature', __( 'The release signature does not match.', 'endeavour' ) );
 	}
 
 	$valid = endeavour_validate_release_payload( $payload );
@@ -447,7 +437,7 @@ function endeavour_release_api_url(): string {
  */
 function endeavour_update_remote_json( string $url ) {
 	if ( ! endeavour_update_url_is_allowed( $url ) && ! endeavour_update_release_url_is_allowed( $url ) ) {
-		return endeavour_update_error( 'endeavour_update_url', 'Refusing to contact a URL outside this GitHub repository.' );
+		return new WP_Error( 'endeavour_update_url', __( 'Refusing to contact a URL outside this GitHub repository.', 'endeavour' ) );
 	}
 
 	$response = wp_remote_get( $url, endeavour_update_http_args() );
@@ -462,7 +452,7 @@ function endeavour_update_remote_json( string $url ) {
 
 	$decoded = json_decode( wp_remote_retrieve_body( $response ), true );
 	if ( ! is_array( $decoded ) ) {
-		return endeavour_update_error( 'endeavour_update_json', 'GitHub did not return JSON.' );
+		return new WP_Error( 'endeavour_update_json', __( 'GitHub did not return JSON.', 'endeavour' ) );
 	}
 
 	return $decoded;
@@ -513,20 +503,20 @@ function endeavour_validate_release_payload( array $payload ) {
 	$sha     = $payload['sha256'] ?? '';
 
 	if ( ! is_string( $version ) || 1 !== preg_match( '/^\d+\.\d+\.\d+$/', $version ) ) {
-		return endeavour_update_error( 'endeavour_update_version', 'The release version is invalid.' );
+		return new WP_Error( 'endeavour_update_version', __( 'The release version is invalid.', 'endeavour' ) );
 	}
 
 	if ( ! is_string( $sha ) || 1 !== preg_match( '/^[a-f0-9]{64}$/', $sha ) ) {
-		return endeavour_update_error( 'endeavour_update_checksum', 'The release checksum is invalid.' );
+		return new WP_Error( 'endeavour_update_checksum', __( 'The release checksum is invalid.', 'endeavour' ) );
 	}
 
 	if ( ! is_string( $package ) || ! endeavour_update_url_is_allowed( $package ) || ! str_ends_with( $package, '/' . ENDEAVOUR_RELEASE_ZIP ) ) {
-		return endeavour_update_error( 'endeavour_update_package', 'The release package URL is not on GitHub.' );
+		return new WP_Error( 'endeavour_update_package', __( 'The release package URL is not on GitHub.', 'endeavour' ) );
 	}
 
 	$requires_php = is_string( $payload['requires_php'] ?? null ) ? $payload['requires_php'] : ENDEAVOUR_MIN_PHP;
 	if ( version_compare( PHP_VERSION, $requires_php, '<' ) ) {
-		return endeavour_update_error( 'endeavour_update_php', 'This server PHP version is older than the release requires.' );
+		return new WP_Error( 'endeavour_update_php', __( 'This server PHP version is older than the release requires.', 'endeavour' ) );
 	}
 
 	return true;
@@ -588,11 +578,11 @@ function endeavour_update_url_parts( string $url, string $host ): ?array {
  */
 function endeavour_update_http_error( int $code ): WP_Error {
 	if ( in_array( $code, array( 401, 403 ), true ) ) {
-		return endeavour_update_error( 'endeavour_update_http', 'GitHub refused the download. The release has to be publicly readable.' );
+		return new WP_Error( 'endeavour_update_http', __( 'GitHub refused the download. The release has to be publicly readable.', 'endeavour' ) );
 	}
 
 	if ( 404 === $code ) {
-		return endeavour_update_error( 'endeavour_update_http', 'GitHub has no public release yet.' );
+		return new WP_Error( 'endeavour_update_http', __( 'GitHub has no public release yet.', 'endeavour' ) );
 	}
 
 	return new WP_Error(
@@ -614,7 +604,7 @@ function endeavour_update_http_error( int $code ): WP_Error {
  */
 function endeavour_update_download( string $url, string $file ) {
 	if ( ! endeavour_update_url_is_allowed( $url ) ) {
-		return endeavour_update_error( 'endeavour_update_url', 'Refusing to download a package outside this GitHub repository.' );
+		return new WP_Error( 'endeavour_update_url', __( 'Refusing to download a package outside this GitHub repository.', 'endeavour' ) );
 	}
 
 	$response = wp_remote_get(
@@ -667,6 +657,10 @@ function endeavour_render_updates_page() {
 	$state     = get_option( ENDEAVOUR_STATE_OPTION, array() );
 	$state     = is_array( $state ) ? $state : array();
 	$available = (string) ( $state['available'] ?? '' );
+	// A stored offer from before an install or manual update is not an offer any more.
+	if ( '' !== $available && ! version_compare( $available, ENDEAVOUR_VERSION, '>' ) ) {
+		$available = '';
+	}
 	$error     = (string) ( $state['error'] ?? '' );
 	$checked   = (int) ( $state['checked_at'] ?? 0 );
 	$notes     = (string) ( $state['changelog'] ?? '' );
