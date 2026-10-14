@@ -37,7 +37,7 @@ add_filter( 'network_admin_plugin_action_links', 'endeavour_required_plugin_link
  * @return mixed
  */
 function endeavour_keep_plugin_active( $value ) {
-	if ( ! is_array( $value ) || ! empty( $GLOBALS['endeavour_upgrading'] ) ) {
+	if ( ! is_array( $value ) ) {
 		return $value;
 	}
 
@@ -57,7 +57,7 @@ add_filter( 'pre_update_option_active_plugins', 'endeavour_keep_plugin_active' )
  * @return mixed
  */
 function endeavour_keep_plugin_network_active( $value ) {
-	if ( ! is_array( $value ) || ! empty( $GLOBALS['endeavour_upgrading'] ) ) {
+	if ( ! is_array( $value ) ) {
 		return $value;
 	}
 
@@ -102,7 +102,7 @@ function endeavour_hook_is_our_upgrade( $hook_extra ): bool {
 }
 
 /**
- * Let WordPress deactivate this plugin for the few seconds it replaces the files.
+ * Remember a network activation before WordPress tries to switch the plugin off.
  *
  * @param mixed $response   Install response so far.
  * @param mixed $hook_extra Upgrader hook arguments.
@@ -115,7 +115,6 @@ function endeavour_begin_plugin_upgrade( $response, $hook_extra ) {
 
 	$plugin = plugin_basename( ENDEAVOUR_FILE );
 
-	$GLOBALS['endeavour_upgrading']          = true;
 	$GLOBALS['endeavour_was_network_active'] = function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( $plugin );
 
 	return $response;
@@ -123,7 +122,10 @@ function endeavour_begin_plugin_upgrade( $response, $hook_extra ) {
 add_filter( 'upgrader_pre_install', 'endeavour_begin_plugin_upgrade', 1, 2 );
 
 /**
- * Turn the plugin back on when the new files are in place.
+ * Put the plugin back in the active list without loading its file again.
+ *
+ * Loading the file here crashes, because this request already loaded it.
+ * That crash is what left the plugin switched off.
  *
  * @param WP_Upgrader $upgrader   Upgrader instance.
  * @param mixed       $hook_extra Upgrader hook arguments.
@@ -135,31 +137,31 @@ function endeavour_reactivate_after_upgrade( $upgrader, $hook_extra ) {
 		return;
 	}
 
-	$GLOBALS['endeavour_upgrading'] = false;
-
-	if ( ! function_exists( 'activate_plugin' ) ) {
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	$plugin = plugin_basename( ENDEAVOUR_FILE );
+	if ( ! is_file( WP_PLUGIN_DIR . '/' . $plugin ) ) {
+		return;
 	}
 
-	$plugin = plugin_basename( ENDEAVOUR_FILE );
 	if ( function_exists( 'wp_paused_plugins' ) ) {
 		wp_paused_plugins()->delete( dirname( $plugin ) );
 	}
 
-	if ( is_wp_error( validate_plugin( $plugin ) ) ) {
-		return;
-	}
-
-	$network = ! empty( $GLOBALS['endeavour_was_network_active'] );
-	if ( $network ) {
-		if ( ! is_plugin_active_for_network( $plugin ) ) {
-			activate_plugin( $plugin, '', true, true );
+	if ( ! empty( $GLOBALS['endeavour_was_network_active'] ) ) {
+		$sitewide = (array) get_site_option( 'active_sitewide_plugins', array() );
+		if ( ! isset( $sitewide[ $plugin ] ) ) {
+			$sitewide[ $plugin ] = time();
+			update_site_option( 'active_sitewide_plugins', $sitewide );
 		}
 		return;
 	}
 
-	if ( ! is_plugin_active( $plugin ) ) {
-		activate_plugin( $plugin, '', false, true );
+	$active = (array) get_option( 'active_plugins', array() );
+	if ( in_array( $plugin, $active, true ) ) {
+		return;
 	}
+
+	$active[] = $plugin;
+	sort( $active );
+	update_option( 'active_plugins', $active );
 }
 add_action( 'upgrader_process_complete', 'endeavour_reactivate_after_upgrade', 10, 2 );

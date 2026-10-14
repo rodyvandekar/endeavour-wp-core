@@ -3,7 +3,7 @@
  * Plugin Name: Endeavour WP Core
  * Plugin URI: https://endeavour.nl
  * Description: Design-system behaviour for the Endeavour site: post types, Elementor widgets and the compiled styles.
- * Version: 1.4.4
+ * Version: 1.4.5
  * Requires at least: 6.4
  * Requires PHP: 8.2
  * Author: Endeavour
@@ -21,40 +21,54 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ENDEAVOUR_VERSION', '1.4.4' );
-define( 'ENDEAVOUR_FILE', __FILE__ );
-define( 'ENDEAVOUR_DIR', plugin_dir_path( ENDEAVOUR_FILE ) );
-define( 'ENDEAVOUR_URL', plugin_dir_url( ENDEAVOUR_FILE ) );
-
-/**
- * Absolute path inside this plugin, without a trailing slash.
- *
- * @return string
- */
-function endeavour_path() {
-	return untrailingslashit( ENDEAVOUR_DIR );
+if ( ! defined( 'ENDEAVOUR_VERSION' ) ) {
+	define( 'ENDEAVOUR_VERSION', '1.4.5' );
+}
+if ( ! defined( 'ENDEAVOUR_FILE' ) ) {
+	define( 'ENDEAVOUR_FILE', __FILE__ );
+}
+if ( ! defined( 'ENDEAVOUR_DIR' ) ) {
+	define( 'ENDEAVOUR_DIR', plugin_dir_path( ENDEAVOUR_FILE ) );
+}
+if ( ! defined( 'ENDEAVOUR_URL' ) ) {
+	define( 'ENDEAVOUR_URL', plugin_dir_url( ENDEAVOUR_FILE ) );
 }
 
-/**
- * URL of this plugin, without a trailing slash.
- *
- * @return string
- */
-function endeavour_url() {
-	return untrailingslashit( ENDEAVOUR_URL );
+if ( ! function_exists( 'endeavour_path' ) ) {
+	/**
+	 * Absolute path inside this plugin, without a trailing slash.
+	 *
+	 * @return string
+	 */
+	function endeavour_path() {
+		return untrailingslashit( ENDEAVOUR_DIR );
+	}
 }
 
-/**
- * Load translations shipped with the plugin.
- */
-function endeavour_load_textdomain() {
-	load_plugin_textdomain(
-		'endeavour',
-		false,
-		dirname( plugin_basename( ENDEAVOUR_FILE ) ) . '/languages'
-	);
+if ( ! function_exists( 'endeavour_url' ) ) {
+	/**
+	 * URL of this plugin, without a trailing slash.
+	 *
+	 * @return string
+	 */
+	function endeavour_url() {
+		return untrailingslashit( ENDEAVOUR_URL );
+	}
 }
-add_action( 'init', 'endeavour_load_textdomain' );
+
+if ( ! function_exists( 'endeavour_load_textdomain' ) ) {
+	/**
+	 * Load translations shipped with the plugin.
+	 */
+	function endeavour_load_textdomain() {
+		load_plugin_textdomain(
+			'endeavour',
+			false,
+			dirname( plugin_basename( ENDEAVOUR_FILE ) ) . '/languages'
+		);
+	}
+	add_action( 'init', 'endeavour_load_textdomain' );
+}
 
 require_once ENDEAVOUR_DIR . 'inc/nav-menu-locations.php';
 require_once ENDEAVOUR_DIR . 'inc/nav-menu-item-borders.php';
