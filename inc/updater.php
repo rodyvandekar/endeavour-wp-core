@@ -40,6 +40,7 @@ function endeavour_updater_bootstrap() {
 	add_action( 'admin_notices', 'endeavour_update_admin_notice' );
 	add_action( 'network_admin_notices', 'endeavour_update_admin_notice' );
 	add_action( 'admin_post_endeavour_check_updates', 'endeavour_handle_check_updates' );
+	add_action( 'load-update-core.php', 'endeavour_force_check_on_updates_screen' );
 
 	if ( wp_installing() ) {
 		return;
@@ -135,6 +136,17 @@ function endeavour_run_update_check() {
 	if ( doing_action( 'endeavour_update_check' ) ) {
 		wp_update_plugins();
 	}
+}
+
+/**
+ * Dashboard → Updates → Check again also asks GitHub right away.
+ */
+function endeavour_force_check_on_updates_screen() {
+	if ( ! isset( $_GET['force-check'] ) || ! endeavour_updater_can() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return;
+	}
+
+	endeavour_run_update_check();
 }
 
 /**

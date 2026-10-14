@@ -3,7 +3,7 @@
  * Plugin Name: Endeavour WP Core
  * Plugin URI: https://endeavour.nl
  * Description: Design-system behaviour for the Endeavour site: post types, Elementor widgets and the compiled styles.
- * Version: 1.4.3
+ * Version: 1.4.4
  * Requires at least: 6.4
  * Requires PHP: 8.2
  * Author: Endeavour
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ENDEAVOUR_VERSION', '1.4.3' );
+define( 'ENDEAVOUR_VERSION', '1.4.4' );
 define( 'ENDEAVOUR_FILE', __FILE__ );
 define( 'ENDEAVOUR_DIR', plugin_dir_path( ENDEAVOUR_FILE ) );
 define( 'ENDEAVOUR_URL', plugin_dir_url( ENDEAVOUR_FILE ) );
