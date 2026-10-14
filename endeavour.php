@@ -3,7 +3,7 @@
  * Plugin Name: Endeavour WP Core
  * Plugin URI: https://endeavour.nl
  * Description: Design-system behaviour for the Endeavour site: post types, Elementor widgets and the compiled styles.
- * Version: 1.4.5
+ * Version: 1.5.0
  * Requires at least: 6.4
  * Requires PHP: 8.2
  * Author: Endeavour
@@ -21,17 +21,43 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/*
+ * Settings used across the plugin. The release build reads the header and
+ * these constants, so the version and requirements are written only once.
+ */
 if ( ! defined( 'ENDEAVOUR_VERSION' ) ) {
-	define( 'ENDEAVOUR_VERSION', '1.4.5' );
+	define( 'ENDEAVOUR_VERSION', '1.5.0' );
+}
+if ( ! defined( 'ENDEAVOUR_SLUG' ) ) {
+	define( 'ENDEAVOUR_SLUG', 'endeavour-wp-core' );
 }
 if ( ! defined( 'ENDEAVOUR_FILE' ) ) {
 	define( 'ENDEAVOUR_FILE', __FILE__ );
+}
+if ( ! defined( 'ENDEAVOUR_BASENAME' ) ) {
+	define( 'ENDEAVOUR_BASENAME', plugin_basename( ENDEAVOUR_FILE ) );
 }
 if ( ! defined( 'ENDEAVOUR_DIR' ) ) {
 	define( 'ENDEAVOUR_DIR', plugin_dir_path( ENDEAVOUR_FILE ) );
 }
 if ( ! defined( 'ENDEAVOUR_URL' ) ) {
 	define( 'ENDEAVOUR_URL', plugin_dir_url( ENDEAVOUR_FILE ) );
+}
+if ( ! defined( 'ENDEAVOUR_MIN_WP' ) ) {
+	define( 'ENDEAVOUR_MIN_WP', '6.4' );
+}
+if ( ! defined( 'ENDEAVOUR_MIN_PHP' ) ) {
+	define( 'ENDEAVOUR_MIN_PHP', '8.2' );
+}
+if ( ! defined( 'ENDEAVOUR_HOMEPAGE' ) ) {
+	define( 'ENDEAVOUR_HOMEPAGE', 'https://endeavour.nl' );
+}
+if ( ! defined( 'ENDEAVOUR_REPOSITORY' ) ) {
+	define( 'ENDEAVOUR_REPOSITORY', 'rodyvandekar/endeavour-wp-core' );
+}
+if ( ! defined( 'ENDEAVOUR_UPDATE_PUBLIC_KEY' ) ) {
+	/* Public half of the release signing key. The private half lives in the GitHub secret ENDEAVOUR_SIGNING_KEY. */
+	define( 'ENDEAVOUR_UPDATE_PUBLIC_KEY', 'yitLpgI+XyS8Xr77nGDK0aTZDnd8KfjTLAYs5znwTB4=' );
 }
 
 if ( ! function_exists( 'endeavour_path' ) ) {
@@ -56,16 +82,26 @@ if ( ! function_exists( 'endeavour_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'endeavour_asset_version' ) ) {
+	/**
+	 * Cache-busting version for a bundled file: its modification time, so a
+	 * recompile reaches the browser. A missing file falls back to the plugin
+	 * version instead of raising a warning on every page.
+	 *
+	 * @param string $path Absolute path to the file.
+	 * @return string
+	 */
+	function endeavour_asset_version( string $path ): string {
+		return is_file( $path ) ? (string) filemtime( $path ) : ENDEAVOUR_VERSION;
+	}
+}
+
 if ( ! function_exists( 'endeavour_load_textdomain' ) ) {
 	/**
 	 * Load translations shipped with the plugin.
 	 */
 	function endeavour_load_textdomain() {
-		load_plugin_textdomain(
-			'endeavour',
-			false,
-			dirname( plugin_basename( ENDEAVOUR_FILE ) ) . '/languages'
-		);
+		load_plugin_textdomain( 'endeavour', false, dirname( ENDEAVOUR_BASENAME ) . '/languages' );
 	}
 	add_action( 'init', 'endeavour_load_textdomain' );
 }

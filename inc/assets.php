@@ -49,7 +49,7 @@ function endeavour_enqueue_behaviour_scripts() {
 			$handle,
 			endeavour_url() . '/assets/js/' . $script['file'],
 			$script['deps'],
-			(string) filemtime( $absolute_path ),
+			endeavour_asset_version( $absolute_path ),
 			true
 		);
 	}
@@ -101,7 +101,7 @@ function endeavour_enqueue_elementor_styles() {
 			$handle,
 			endeavour_url() . $relative_path,
 			$dependencies,
-			(string) filemtime( $absolute_path )
+			endeavour_asset_version( $absolute_path )
 		);
 	}
 }

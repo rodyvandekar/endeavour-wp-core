@@ -23,7 +23,7 @@ function endeavour_child_register_carousel_nav_assets() {
 			'endeavour-carousel-nav',
 			$uri . $stylesheet,
 			array(),
-			(string) filemtime( $directory . $stylesheet )
+			endeavour_asset_version( $directory . $stylesheet )
 		);
 	}
 
@@ -34,7 +34,7 @@ function endeavour_child_register_carousel_nav_assets() {
 			'endeavour-carousel-nav',
 			$uri . $script,
 			array( 'elementor-frontend' ),
-			(string) filemtime( $directory . $script ),
+			endeavour_asset_version( $directory . $script ),
 			true
 		);
 	}
@@ -68,7 +68,7 @@ function endeavour_child_enqueue_carousel_nav_editor_script() {
 		'endeavour-carousel-nav-editor',
 		endeavour_url() . '/assets/js/elementor-carousel-nav-editor.js',
 		array( 'elementor-editor' ),
-		(string) filemtime( $path ),
+		endeavour_asset_version( $path ),
 		true
 	);
 }
