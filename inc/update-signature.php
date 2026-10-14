@@ -2,7 +2,7 @@
 /**
  * Sign and verify Endeavour release manifests.
  *
- * This file stays free of WordPress so the GitLab build can use the same
+ * This file stays free of WordPress so the release build can use the same
  * rules as the site that installs the release.
  *
  * @package Endeavour

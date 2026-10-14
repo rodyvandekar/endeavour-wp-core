@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
+
+jobs:
+  lint:
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          coverage: none
+      - run: find . -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+
+  release:
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: zip
+          coverage: none
+      - name: Build the signed release
+        env:
+          CI_COMMIT_TAG: ${{ github.ref_name }}
+          ENDEAVOUR_SIGNING_KEY: ${{ secrets.ENDEAVOUR_SIGNING_KEY }}
+        run: |
+          message="$(git tag -l --format='%(contents)' "$GITHUB_REF_NAME")"
+          CI_COMMIT_TAG_MESSAGE="$message" php bin/build-release.php
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="$(git tag -l --format='%(contents)' "$GITHUB_REF_NAME")"
+          if [ -z "$notes" ]; then
+            notes="$GITHUB_REF_NAME"
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes "$notes" \
+            build/endeavour.zip \
+            build/manifest.json

@@ -3,7 +3,7 @@
  * Build a signed Endeavour release.
  *
  * Reads the plugin version, checks it against the git tag, and writes
- * build/endeavour.zip and build/manifest.json. GitLab CI uploads both.
+ * build/endeavour.zip and build/manifest.json. GitHub Actions uploads both.
  *
  * @package Endeavour
  */
@@ -13,6 +13,9 @@ $root = dirname( __DIR__ );
 require_once $root . '/inc/update-signature.php';
 
 $tag = getenv( 'CI_COMMIT_TAG' );
+if ( ! is_string( $tag ) || '' === $tag ) {
+	$tag = getenv( 'GITHUB_REF_NAME' );
+}
 if ( ! is_string( $tag ) || '' === $tag ) {
 	fwrite( STDERR, "CI_COMMIT_TAG is required, for example v1.2.0\n" );
 	exit( 1 );
@@ -43,21 +46,15 @@ if ( ! is_string( $secret ) || SODIUM_CRYPTO_SIGN_SECRETKEYBYTES !== strlen( $se
 	exit( 1 );
 }
 
-$project = getenv( 'CI_PROJECT_PATH' );
-if ( ! is_string( $project ) || '' === $project ) {
-	$project = 'internal/elementor-team/endeavour';
-}
-
-$host = getenv( 'CI_SERVER_HOST' );
-if ( ! is_string( $host ) || '' === $host ) {
-	$host = 'gitlab.pxlwidgets.com';
+$repository = getenv( 'GITHUB_REPOSITORY' );
+if ( ! is_string( $repository ) || 1 !== preg_match( '#^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$#', $repository ) ) {
+	$repository = 'rodyvandekar/endeavour-wp-core';
 }
 
 $package = sprintf(
-	'https://%s/api/v4/projects/%s/packages/generic/endeavour/%s/endeavour.zip',
-	$host,
-	rawurlencode( $project ),
-	rawurlencode( $tag )
+	'https://github.com/%s/releases/download/%s/endeavour.zip',
+	$repository,
+	$tag
 );
 
 $build = $root . '/build';
@@ -179,30 +176,5 @@ function endeavour_release_zip( string $root, string $zip_path ): void {
 		}
 	}
 
-	$token_php = endeavour_release_token_php();
-	if ( '' !== $token_php ) {
-		$zip->addFromString( $prefix . 'inc/update-token.php', $token_php );
-	}
-
 	$zip->close();
-}
-
-/**
- * Optional read token, written only into the release zip.
- *
- * The CI variable keeps a private registry readable without wp-config.php.
- * A public package registry does not need it.
- */
-function endeavour_release_token_php(): string {
-	$token = getenv( 'ENDEAVOUR_UPDATE_TOKEN' );
-	if ( ! is_string( $token ) ) {
-		return '';
-	}
-
-	$token = trim( $token );
-	if ( '' === $token ) {
-		return '';
-	}
-
-	return "<?php\nreturn " . var_export( $token, true ) . ";\n";
 }
